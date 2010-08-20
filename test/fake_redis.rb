@@ -1,10 +1,12 @@
 class Redis
   def initialize(config)
     @storage = {}
+    @expires = Hash.new(nil)
   end
 
   def [](key)
     # puts "retrieve #{key}"
+    return nil if !@expires[key].nil? && @expires[key] < Time.now
     @storage[key]
   end
 
@@ -14,7 +16,10 @@ class Redis
   end
 
   def expire(key, time)
-    # Hmm, let's not do anything here
-    # puts "expiring #{key} in #{time}"
+    @expires[key] = Time.now + time
+  end
+  
+  def flush_db
+    @storage = {}
   end
 end

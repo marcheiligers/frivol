@@ -2,8 +2,12 @@ require 'helper'
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    fake_redis
-    Frivol::Config.redis_config = {}
+    fake_redis # Comment out this line to test against a real live Redis
+    Frivol::Config.redis_config = {} # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
+  end
+  
+  def teardown
+    Frivol::Config.redis.flush_db
   end
   
   should "have a default storage key made up of the class name and id" do
@@ -51,7 +55,7 @@ class TestFrivol < Test::Unit::TestCase
     
     t = DefaultsTestClass.new
     t.save
-    assert_equal [ "value", "value2" ], t.load
+    assert_equal [ "value", "value2" ], t.load.sort
   end
 
   should "be able to override the key method" do
@@ -93,6 +97,15 @@ class TestFrivol < Test::Unit::TestCase
     t.load
     t.save
     t.save
+  end
+  
+  should "expires should not throw nasty errors" do
+    t = TestClass.new
+    t.save
+    t.expire_storage 0.5
+    sleep 1
+    t = TestClass.new # Get a fresh instance so that the @frivol_hash is empty
+    assert_equal "junk", t.load
   end
   
   should "be able to include in other classes with storage expiry" do
