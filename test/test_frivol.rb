@@ -103,4 +103,11 @@ class TestFrivol < Test::Unit::TestCase
     assert t.respond_to? :store
     assert_equal 30, BlankTestClass.storage_expiry
   end
+  
+  should "return the already loaded hash if it's already loaded" do
+    Frivol::Config.redis.expects(:[]).once
+    t = TestClass.new
+    t.load
+    t.load
+  end
 end

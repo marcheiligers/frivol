@@ -27,7 +27,7 @@ module Frivol
   end
   
   def retrieve_hash
-    @frivol_hash if defined? @frivol_hash
+    return @frivol_hash if defined? @frivol_hash
     json = Frivol::Config.redis[storage_key]
     @frivol_is_new = json.nil?
     @frivol_hash = @frivol_is_new ? {} : JSON.parse(json)
