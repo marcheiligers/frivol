@@ -6,7 +6,7 @@ begin
   Jeweler::Tasks.new do |gem|
     gem.name = "frivol"
     gem.summary = %Q{Simple Redis backed temporary storage}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.description = %Q{Simple Redis backed temporary storage intended primarily for use with ActiveRecord models to provide caching}
     gem.email = "marc@eternal.co.za"
     gem.homepage = "http://github.com/marcheiligers/frivol"
     gem.authors = ["Marc Heiligers"]
