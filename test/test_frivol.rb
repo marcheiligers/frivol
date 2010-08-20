@@ -57,6 +57,32 @@ class TestFrivol < Test::Unit::TestCase
     t.save
     assert_equal [ "value", "value2" ], t.load.sort
   end
+  
+  should "not be naughty and try to respond to nil default" do
+    class DefaultNilTestClass < TestClass
+      def load
+        retrieve :value => nil
+      end
+    end
+  
+    t = DefaultNilTestClass.new
+    assert_equal nil, t.load
+  end
+
+  should "only try respond to symbol defaults" do
+    class DefaultNonSymbolTestClass < TestClass
+      def load
+        retrieve :value => "load", :def_val => :default_value # yes, that's right, we would cause a stack overflow here
+      end
+      
+      def default_value
+        "yay!"
+      end
+    end
+  
+    t = DefaultNonSymbolTestClass.new
+    assert_equal [ "load", "yay!" ], t.load.sort
+  end
 
   should "be able to override the key method" do
     class OverrideKeyTestClass < TestClass

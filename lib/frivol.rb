@@ -13,7 +13,7 @@ module Frivol
   def retrieve(keys_and_defaults)
     Frivol::Helpers.retrieve_hash self
     result = keys_and_defaults.map do |key, default|
-      @frivol_hash[key.to_s] || (respond_to?(default) && send(default)) || default
+      @frivol_hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
     end
     return result.first if result.size == 1
     result
