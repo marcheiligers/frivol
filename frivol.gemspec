@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Marc Heiligers"]
   s.date = %q{2010-08-20}
-  s.description = %q{TODO: longer description of your gem}
+  s.description = %q{Simple Redis backed temporary storage intended primarily for use with ActiveRecord models to provide caching}
   s.email = %q{marc@eternal.co.za}
   s.extra_rdoc_files = [
     "LICENSE",
@@ -23,6 +23,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "frivol.gemspec",
      "lib/frivol.rb",
      "test/fake_redis.rb",
      "test/helper.rb",
