@@ -82,4 +82,25 @@ class TestFrivol < Test::Unit::TestCase
     t.save
     assert_equal Time.local(2010, 8, 20), t.load
   end
+  
+  should "expire storage the first time it's stored" do
+    class ExpiryTestClass < TestClass
+      storage_expires_in 60
+    end
+    
+    Frivol::Config.redis.expects(:expire).once
+    t = ExpiryTestClass.new
+    t.load
+    t.save
+    t.save
+  end
+  
+  should "be able to include in other classes with storage expiry" do
+    class BlankTestClass
+    end
+    Frivol::Config.include_in(BlankTestClass, 30)
+    t = BlankTestClass.new
+    assert t.respond_to? :store
+    assert_equal 30, BlankTestClass.storage_expiry
+  end
 end
