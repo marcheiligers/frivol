@@ -1,6 +1,8 @@
-= frivol
+= Frivol
 
-Description goes here.
+A really simple Redis-backed temporary storage mechanism.
+
+Also extends Time to allow it to be (de)serialized to JSON.
 
 == Note on Patches/Pull Requests
  
