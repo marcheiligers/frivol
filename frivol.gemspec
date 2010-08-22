@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{frivol}
-  s.version = "0.1.3"
+  s.version = "0.1.4"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Marc Heiligers"]
-  s.date = %q{2010-08-20}
+  s.date = %q{2010-08-22}
   s.description = %q{Simple Redis backed temporary storage intended primarily for use with ActiveRecord models to provide caching}
   s.email = %q{marc@eternal.co.za}
   s.extra_rdoc_files = [
@@ -23,6 +23,28 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "doc/classes/Frivol.html",
+     "doc/classes/Frivol.src/M000003.html",
+     "doc/classes/Frivol.src/M000004.html",
+     "doc/classes/Frivol.src/M000005.html",
+     "doc/classes/Frivol.src/M000006.html",
+     "doc/classes/Frivol/ClassMethods.html",
+     "doc/classes/Frivol/ClassMethods.src/M000007.html",
+     "doc/classes/Frivol/ClassMethods.src/M000008.html",
+     "doc/classes/Frivol/Config.html",
+     "doc/classes/Frivol/Config.src/M000009.html",
+     "doc/classes/Frivol/Config.src/M000010.html",
+     "doc/classes/Frivol/Config.src/M000011.html",
+     "doc/classes/Time.html",
+     "doc/classes/Time.src/M000001.html",
+     "doc/classes/Time.src/M000002.html",
+     "doc/created.rid",
+     "doc/files/lib/frivol_rb.html",
+     "doc/fr_class_index.html",
+     "doc/fr_file_index.html",
+     "doc/fr_method_index.html",
+     "doc/index.html",
+     "doc/rdoc-style.css",
      "frivol.gemspec",
      "lib/frivol.rb",
      "test/fake_redis.rb",
@@ -45,12 +67,18 @@ Gem::Specification.new do |s|
     s.specification_version = 3
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_development_dependency(%q<shoulda>, [">= 2"])
+      s.add_runtime_dependency(%q<json>, [">= 1.2.0"])
+      s.add_runtime_dependency(%q<redis>, [">= 0.1.2"])
+      s.add_development_dependency(%q<shoulda>, [">= 2.11.1"])
     else
-      s.add_dependency(%q<shoulda>, [">= 2"])
+      s.add_dependency(%q<json>, [">= 1.2.0"])
+      s.add_dependency(%q<redis>, [">= 0.1.2"])
+      s.add_dependency(%q<shoulda>, [">= 2.11.1"])
     end
   else
-    s.add_dependency(%q<shoulda>, [">= 2"])
+    s.add_dependency(%q<json>, [">= 1.2.0"])
+    s.add_dependency(%q<redis>, [">= 0.1.2"])
+    s.add_dependency(%q<shoulda>, [">= 2.11.1"])
   end
 end
 
