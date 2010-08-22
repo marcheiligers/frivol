@@ -2,7 +2,7 @@ require 'helper'
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    fake_redis # Comment out this line to test against a real live Redis
+    #fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = {} # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
   end
   
@@ -23,7 +23,7 @@ class TestFrivol < Test::Unit::TestCase
   
   should "return a default for a value that's not in storage" do
     t = TestClass.new
-    assert_equal "junk", t.load
+    assert_equal "default", t.load
   end
   
   should "save and retrieve multiple values" do
@@ -131,7 +131,7 @@ class TestFrivol < Test::Unit::TestCase
     t.expire_storage 0.5
     sleep 1
     t = TestClass.new # Get a fresh instance so that the @frivol_hash is empty
-    assert_equal "junk", t.load
+    assert_equal "default", t.load
   end
   
   should "be able to include in other classes with storage expiry" do
@@ -148,5 +148,12 @@ class TestFrivol < Test::Unit::TestCase
     t = TestClass.new
     t.load
     t.load
+  end
+  
+  should "be able to delete storage" do
+    t = TestClass.new
+    t.save
+    t.delete_storage
+    assert_equal "default", t.load
   end
 end

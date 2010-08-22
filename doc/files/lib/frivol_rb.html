@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>File: frivol.rb</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+  <div id="fileHeader">
+    <h1>frivol.rb</h1>
+    <table class="header-table">
+    <tr class="top-aligned-row">
+      <td><strong>Path:</strong></td>
+      <td>lib/frivol.rb
+      </td>
+    </tr>
+    <tr class="top-aligned-row">
+      <td><strong>Last Update:</strong></td>
+      <td>Sun Aug 22 15:18:58 +0200 2010</td>
+    </tr>
+    </table>
+  </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <h1><a href="../../classes/Frivol.html">Frivol</a> - Frivolously simple temporary storage backed by Redis</h1>
+<p>
+A really simple Redis-backed temporary storage mechanism intended to be
+used with ActiveRecord, but will work with other ORM&#8216;s or any classes
+really.
+</p>
+<p>
+I developed <a href="../../classes/Frivol.html">Frivol</a> secifically for
+use in Mad Mimi (<a href="http://madmimi.com">madmimi.com</a>) to help with
+caching of data which requires fairly long running (multi-second) database
+queries, and also to aid with communication of status from background tasks
+running in Resque on workers to the front end web servers. Redis was chosen
+because we already had Resque, which is Redis-backed. Also, unlike
+memcached, Redis persists it&#8216;s data to disk, meaning there is far
+less warmup required when a hot system is restarted. <a
+href="../../classes/Frivol.html">Frivol</a>&#8216;s design is such that it
+solves our problem, but I believe it is generic enough to be used in many
+Rails web projects and even in other types of projects altogether.
+</p>
+<h2>Usage</h2>
+<p>
+Configure <a href="../../classes/Frivol.html">Frivol</a> in your
+configuration, for example in an initializer or in environment.rb
+</p>
+<pre>
+  REDIS_CONFIG = {
+    :host =&gt; &quot;localhost&quot;,
+    :port =&gt; 6379
+  }
+  Frivol::Config.redis_config = REDIS_CONFIG
+</pre>
+<p>
+Now include <a href="../../classes/Frivol.html">Frivol</a> in whichever
+classes you&#8216;d like to make use of temporary storage. You can
+optionally call the <tt>storage_expires_in(time)</tt> class method to set a
+default expiry. In your methods you can now call the
+<tt>store(keys_and_values)</tt> and <tt>retrieve(keys_and_defaults)</tt>
+methods.
+</p>
+<p>
+Defaults in the <tt>retrieve</tt> method can be symbols, in which case <a
+href="../../classes/Frivol.html">Frivol</a> will check if the class
+<tt>respond_to?</tt> a method by that name to get the default.
+</p>
+<p>
+The <tt>expire_storage(time)</tt> method can be used to set the expiry time
+in seconds of the temporary storage. The default is not to expire the
+storage, in which case it will live for as long as Redis keeps it.
+</p>
+<p>
+<a href="../../classes/Frivol.html">Frivol</a> uses the
+<tt>storage_key</tt> method to create a base key for storage in Redis. The
+current implementation uses <tt>&quot;#{self.class.name}-#{id}&quot;</tt>
+so you&#8216;ll want to override that method if you have classes that
+don&#8216;t respond to id.
+</p>
+<p>
+<a href="../../classes/Frivol.html">Frivol</a> also extends <a
+href="../../classes/Time.html">Time</a> to allow it to be (de)serialized to
+JSON, which currently used to store data in Redis.
+</p>
+<h2>Example</h2>
+<pre>
+  class BigComplexCalcer
+    include Frivol
+    storage_expires_in 600 # temporary storage expires in 10 minutes.
+
+    def initialize(key)
+      @key = key
+    end
+
+    def storage_key
+      &quot;frivol-test-#{key}&quot; # override the storage key because we don't respond_to? id
+    end
+
+    def big_complex_calc
+      retrieve :complex =&gt; :do_big_complex_calc # do_big_complex_calc is the method to get the default from
+    end
+
+    def last_calc_done
+      last = retrieve :last =&gt; nil # default is nil
+      return &quot;never&quot; if last.nil?
+      return &quot;#{Time.now - last} seconds ago&quot;
+    end
+
+    def do_big_complex_calc
+      # Wee! Do some really hard work here...
+      # ...still working...
+      store :complex =&gt; result, :last =&gt; Time.now # ...and let's keep the result for at least 10 minutes, as well as the last time we did it
+    end
+  end
+</pre>
+
+    </div>
+
+    <div id="requires-list">
+      <h3 class="section-bar">Required files</h3>
+
+      <div class="name-list">
+      json&nbsp;&nbsp;
+      redis&nbsp;&nbsp;
+      </div>
+    </div>
+
+   </div>
+
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

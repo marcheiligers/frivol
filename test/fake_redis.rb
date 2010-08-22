@@ -15,6 +15,12 @@ class Redis
     @storage[key] = value
   end
 
+  def del(key)
+    # puts "del #{key}"
+    @storage[key] = nil
+    @expires[key] = nil
+  end
+  
   def expire(key, time)
     @expires[key] = Time.now + time
   end

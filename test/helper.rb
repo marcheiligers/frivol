@@ -25,6 +25,6 @@ class TestClass
   end
   
   def load
-    retrieve :value => "junk"
+    retrieve :value => "default"
   end
 end

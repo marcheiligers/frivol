@@ -1,8 +1,69 @@
-= Frivol
+= Frivol - Frivolously simple temporary storage backed by Redis
+A really simple Redis-backed temporary storage mechanism intended to be used with ActiveRecord,
+but will work with other ORM's or any classes really. 
 
-A really simple Redis-backed temporary storage mechanism.
+I developed Frivol secifically for use in Mad Mimi (http://madmimi.com) to help with caching 
+of data which requires fairly long running (multi-second) database queries, and also to help
+with communication of status from background tasks running in Resque on workers to the front
+end web servers. Redis was chosen because we already had Resque, which is Redis-backed. Also,
+unlike memcached, Redis persists it's data to disk, meaning there is far less warmup required
+when a hot system is restarted. Frivol's design is such that it solves our problem, but I 
+believe it is generic enough to be used in many Rails web projects and even in other types of 
+projects altogether. 
 
-Also extends Time to allow it to be (de)serialized to JSON.
+== Usage
+Configure Frivol in your configuration, for example in an initializer or in environment.rb
+  REDIS_CONFIG = {
+    :host => "localhost", 
+    :port => 6379
+  }
+  Frivol::Config.redis_config = REDIS_CONFIG
+Now include Frivol in whichever classes you'd like to make use of temporary storage. You can optionally
+call the <tt>storage_expires_in(time)</tt> class method to set a default expiry. In your methods you can 
+now call the <tt>store(keys_and_values)</tt> and <tt>retrieve(keys_and_defaults)</tt> methods.
+
+Defaults in the +retrieve+ method can be symbols, in which case Frivol will check if the class <tt>respond_to?</tt>
+a method by that name to get the default.
+
+The <tt>expire_storage(time)</tt> method can be used to set the expiry time in seconds of the temporary storage. 
+The default is not to expire the storage, in which case it will live for as long as Redis keeps it.
+
+Frivol uses the +storage_key+ method to create a base key for storage in Redis. The current implementation uses
+<tt>"#{self.class.name}-#{id}"</tt> so you'll want to override that method if you have classes that don't
+respond to id. 
+
+Frivol also extends Time to allow it to be (de)serialized to JSON, which currently used to store
+data in Redis.
+== Example
+  class BigComplexCalcer
+    include Frivol
+    storage_expires_in 600 # temporary storage expires in 10 minutes.
+
+    def initialize(key)
+      @key = key
+    end
+
+    def storage_key
+      "frivol-test-#{key}" # override the storage key because we don't respond_to? id
+    end
+
+    def big_complex_calc
+      retrieve :complex => :do_big_complex_calc # do_big_complex_calc is the method to get the default from
+    end
+
+    def last_calc_done
+      last = retrieve :last => nil # default is nil
+      return "never" if last.nil?
+      return "#{Time.now - last} seconds ago"
+    end
+
+    def do_big_complex_calc
+      # Wee! Do some really hard work here...
+      # ...still working...
+      store :complex => result, :last => Time.now # ...and let's keep the result for at least 10 minutes, as well as the last time we did it
+    end
+  end
+
 
 == Note on Patches/Pull Requests
  
