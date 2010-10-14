@@ -2,12 +2,12 @@ require 'helper'
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    #fake_redis # Comment out this line to test against a real live Redis
-    Frivol::Config.redis_config = {} # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
+    # fake_redis # Comment out this line to test against a real live Redis
+    Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
   end
   
   def teardown
-    Frivol::Config.redis.flush_db
+    Frivol::Config.redis.flushdb
   end
   
   should "have a default storage key made up of the class name and id" do
@@ -86,7 +86,7 @@ class TestFrivol < Test::Unit::TestCase
 
   should "be able to override the key method" do
     class OverrideKeyTestClass < TestClass
-      def storage_key
+      def storage_key(bucket = nil)
         "my_storage"
       end
     end
@@ -130,10 +130,21 @@ class TestFrivol < Test::Unit::TestCase
     t.save
     t.expire_storage 0.5
     sleep 1
-    t = TestClass.new # Get a fresh instance so that the @frivol_hash is empty
+    t = TestClass.new # Get a fresh instance so that the @frivol_data is empty
     assert_equal "default", t.load
   end
   
+  should "use default expiry set on the class" do
+    class ExpiryTestClass < TestClass
+      storage_expires_in 0.5
+    end
+    t = ExpiryTestClass.new
+    t.save
+    sleep 1
+    t = TestClass.new # Get a fresh instance so that the @frivol_data is empty
+    assert_equal "default", t.load
+  end
+
   should "be able to include in other classes with storage expiry" do
     class BlankTestClass
     end
@@ -155,5 +166,126 @@ class TestFrivol < Test::Unit::TestCase
     t.save
     t.delete_storage
     assert_equal "default", t.load
+  end
+  
+  should "be able to create and use buckets" do
+    class SimpleBucketTestClass < TestClass
+      storage_bucket :blue
+    end
+    t = SimpleBucketTestClass.new
+    assert t.respond_to?(:store_blue)
+    assert t.respond_to?(:retrieve_blue)
+  end
+  
+  should "store different values in different buckets" do
+    class StorageBucketTestClass < TestClass
+      storage_bucket :blue
+      
+      def save_blue
+        store_blue :value => "blue value"
+      end
+      
+      def load_blue
+        retrieve_blue :value => "blue default"
+      end
+    end
+    t = StorageBucketTestClass.new
+    t.save
+    t.save_blue
+    assert_equal "value", t.load
+    assert_equal "blue value", t.load_blue
+  end
+
+  should "have different expiry times for different buckets" do
+    class ExpireBucketsTestClass < TestClass
+      storage_bucket :blue, :expires_in => 0.5
+      storage_expires_in 2
+    end
+    t = ExpireBucketsTestClass.new
+    assert_equal 0.5, ExpireBucketsTestClass.storage_expiry(:blue)
+    assert_equal 2, ExpireBucketsTestClass.storage_expiry
+  end
+
+  should "expire data in buckets" do
+    class ExpireBucketsTestClass < TestClass
+      storage_bucket :blue, :expires_in => 0.5
+      storage_expires_in 2
+      
+      def save_blue
+        store_blue :value => "blue value"
+      end
+      
+      def load_blue
+        retrieve_blue :value => "blue default"
+      end
+    end
+    t = ExpireBucketsTestClass.new
+    t.save
+    t.save_blue
+    sleep 1
+    t = ExpireBucketsTestClass.new # get a new instance so @frivol_data is empty
+    assert_equal "value", t.load
+    assert_equal "blue default", t.load_blue
+  end
+  
+  should "be able to create counter buckets" do
+    class SimpleCounterTestClass < TestClass
+      storage_bucket :blue, :counter => true
+    end
+    t = SimpleCounterTestClass.new
+    assert t.respond_to?(:store_blue)
+    assert t.respond_to?(:retrieve_blue)
+    assert t.respond_to?(:increment_blue)
+  end
+  
+  should "store, increment and retrieve integers in a counter" do
+    class IncrCounterTestClass < TestClass
+      storage_bucket :blue, :counter => true
+      
+      def save_blue
+        store_blue 10
+      end
+      
+      def load_blue
+        retrieve_blue 0
+      end
+    end
+    t = IncrCounterTestClass.new
+    assert_equal 0, t.load_blue
+    t.save_blue
+    assert_equal 10, t.load_blue
+    assert_equal 11, t.increment_blue
+    assert_equal 11, t.load_blue
+  end
+
+  should "have thread safe counters" do
+    class ThreadCounterTestClass < TestClass
+      storage_bucket :blue, :counter => true
+      
+      def save_blue
+        store_blue 10
+      end
+      
+      def load_blue
+        retrieve_blue 0
+      end
+    end
+    t = ThreadCounterTestClass.new
+    t.save_blue
+    assert_equal 10, t.load_blue
+    
+    threads = []
+    100.times do 
+      threads << Thread.new do
+        10.times do
+          temp = ThreadCounterTestClass.new
+          temp.increment_blue
+          sleep(rand(10) / 100.0)
+        end
+      end
+    end
+    threads.each { |a| a.join }
+      
+    assert_equal 1010, t.load_blue
   end
 end

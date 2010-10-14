@@ -44,8 +44,8 @@
 #       @key = key
 #     end
 #
-#     def storage_key
-#       "frivol-test-#{key}" # override the storage key because we don't respond_to? id
+#     def storage_key(bucket = nil)
+#       "frivol-test-#{key}" # override the storage key because we don't respond_to? :id, and don't care about buckets
 #     end
 #
 #     def big_complex_calc
@@ -69,6 +69,9 @@ require "redis"
 
 # == Frivol
 module Frivol
+  # Defines a constant to indicate that storage should never expire
+  NEVER_EXPIRE = nil
+  
   # Store a hash of keys and values.
   #
   # The hash need not be the complete hash of all things stored, just those you want to change.
@@ -77,11 +80,11 @@ module Frivol
   # is intended to be hidden and while it is true that it currently uses a <tt>Hash#to_json</tt> you should not
   # rely on this.
   def store(keys_and_values)
-    Frivol::Helpers.retrieve_hash self
+    hash = Frivol::Helpers.retrieve_hash(self)
     keys_and_values.each do |key, value|
-      @frivol_hash[key.to_s] = value
+      hash[key.to_s] = value
     end
-    Frivol::Helpers.store_hash self
+    Frivol::Helpers.store_hash(self, hash)
   end
   
   # Retrieve stored values, or defaults.
@@ -94,9 +97,9 @@ module Frivol
   # If the default is a symbol, Frivol will attempt to get the default from a method named after that symbol.
   # If the class does not <tt>respond_to?</tt> a method by that name, the symbol will assumed to be the default.
   def retrieve(keys_and_defaults)
-    Frivol::Helpers.retrieve_hash self
+    hash = Frivol::Helpers.retrieve_hash(self)
     result = keys_and_defaults.map do |key, default|
-      @frivol_hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
+      hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
     end
     return result.first if result.size == 1
     result
@@ -108,18 +111,22 @@ module Frivol
   end
   
   # Expire the stored data in +time+ seconds.
-  def expire_storage(time)
+  def expire_storage(time, bucket = nil)
     return if time.nil?
-    Frivol::Config.redis.expire storage_key, time
+    Frivol::Config.redis.expire storage_key(bucket), time
   end
   
   # The base key used for storage in Redis. 
   #
-  # This method has been implemented for use with ActiveRecord and uses <tt>"#{self.class.name}-#{id}"</tt>
+  # This method has been implemented for use with ActiveRecord and uses <tt>"#{self.class.name}-#{id}"</tt> 
+  # for the default bucket and <tt>"#{self.class.name}-#{id}-#{bucket}"</tt> for a named bucket.
   # If you are not using ActiveRecord, or using classes that don't respond to id, you should override
   # this method in your class.
-  def storage_key
+  #
+  # NOTE: This method has changed since version 0.1.4, and now has the bucket parameter (default: nil)
+  def storage_key(bucket = nil)
     @frivol_key ||= "#{self.class.name}-#{id}"
+    bucket.nil? ? @frivol_key : "#{@frivol_key}-#{bucket}"
   end
   
   # == Frivol::Config
@@ -156,46 +163,144 @@ module Frivol
   end
   
   module Helpers #:nodoc:
-    def self.store_hash(instance)
-      hash = instance.instance_variable_get(:@frivol_hash)
-      is_new = instance.instance_variable_get(:@frivol_is_new)
-      key = instance.send(:storage_key)
+    def self.store_hash(instance, hash, bucket = nil)
+      data, is_new = get_hash_and_is_new(instance, bucket)
+      data[bucket.to_s] = hash
+      
+      key = instance.send(:storage_key, bucket)
       Frivol::Config.redis[key] = hash.to_json
-      if is_new
-        instance.expire_storage instance.class.storage_expiry
-        instance.instance_variable_set :@frivol_is_new, false
+      
+      if is_new[bucket.to_s]
+        time = instance.class.storage_expiry(bucket)
+        Frivol::Config.redis.expire(key, time) if time != Frivol::NEVER_EXPIRE
+        is_new[bucket.to_s] = false
       end
     end
 
-    def self.retrieve_hash(instance)
-      return instance.instance_variable_get(:@frivol_hash) if instance.instance_variable_defined? :@frivol_hash
-      key = instance.send(:storage_key)
+    def self.retrieve_hash(instance, bucket = nil)
+      data, is_new = get_hash_and_is_new(instance, bucket)
+      return data[bucket.to_s] if data.key?(bucket.to_s)
+      key = instance.send(:storage_key, bucket)
       json = Frivol::Config.redis[key]
-      instance.instance_variable_set :@frivol_is_new, json.nil?
+      
+      is_new[bucket.to_s] = json.nil?
+      instance.instance_variable_set :@frivol_is_new, is_new
+      
       hash = json.nil? ? {} : JSON.parse(json)
-      instance.instance_variable_set :@frivol_hash, hash
+      data[bucket.to_s] = hash
+      instance.instance_variable_set :@frivol_data, data
+      
       hash
     end
     
-    def self.delete_hash(instance)
-      key = instance.send(:storage_key)
+    def self.delete_hash(instance, bucket = nil)
+      key = instance.send(:storage_key, bucket)
       Frivol::Config.redis.del key
-      instance.instance_variable_set :@frivol_hash, {}
+      
+      data = instance.instance_variable_defined?(:@frivol_data) ? instance.instance_variable_get(:@frivol_data) : {}
+      data.delete(bucket.to_s)
+      instance.instance_variable_set :@frivol_data, data
+    end
+    
+    def self.get_hash_and_is_new(instance, bucket)
+      data = instance.instance_variable_defined?(:@frivol_data) ? instance.instance_variable_get(:@frivol_data) : {}
+      is_new = instance.instance_variable_defined?(:@frivol_is_new) ? instance.instance_variable_get(:@frivol_is_new) : {}
+      [data, is_new]
+    end
+
+    def self.store_counter(instance, counter, value)
+      key = instance.send(:storage_key, counter)
+      Frivol::Config.redis[key] = value
+    end
+    
+    def self.retrieve_counter(instance, counter, default)
+      key = instance.send(:storage_key, counter)
+      (Frivol::Config.redis[key] || default).to_i
+    end
+
+    def self.increment_counter(instance, counter)
+      key = instance.send(:storage_key, counter)
+      Frivol::Config.redis.incr(key)
     end
   end
   
   # == Frivol::ClassMethods
   # These methods are available on the class level when Frivol is included in the class.
   module ClassMethods
-    # Set the storage expiry time in seconds.
-    def storage_expires_in(time)
-      @frivol_storage_expiry = time
+    # Set the storage expiry time in seconds for the default bucket or the bucket passed.
+    def storage_expires_in(time, bucket = nil)
+      @frivol_storage_expiry ||= {}
+      @frivol_storage_expiry[bucket.to_s] = time
     end
     
-    # Get the storage expiry time in seconds.
-    def storage_expiry
-      @frivol_storage_expiry
+    # Get the storage expiry time in seconds for the default bucket or the bucket passed.
+    def storage_expiry(bucket = nil)
+      @frivol_storage_expiry ||= {}
+      @frivol_storage_expiry.key?(bucket.to_s) ? @frivol_storage_expiry[bucket.to_s] : NEVER_EXPIRE
     end
+    
+    # Create a storage bucket.
+    # Frivol creates store_#{bucket} and retrieve_#{bucket} methods automatically.
+    # These methods work exactly like the default store and retrieve methods except that the bucket is 
+    # stored in it's own key in Redis and can have it's own expiry time.
+    #
+    # Counters are special in that they do not store a hash but only a single integer value and also
+    # that the data in a counter is not cached for the lifespan of the object, but rather each call
+    # hits Redis. This is intended to make counters thread safe (for example you may have multiple
+    # workers working on a job and they can each increment a progress counter which would not work
+    # with the default retrieve/store method that normal buckets use). For this to actually be thread safe
+    # you need to pass the thread safe option to the config when you make the connection.
+    #
+    # In the case of a counter, the methods work slightly differently:
+    # - store_#{bucket} only takes an integer value to store (no key)
+    # - retrieve_#{bucket} only takes an integer default, and returns only the integer value
+    # - there is an added increment_#{bucket} method which increments the counter by 1
+    #
+    # Options are :expires_in which sets the expiry time for a bucket,
+    # and :counter to create a special counter storage bucket.
+    def storage_bucket(bucket, options = {})
+      time = options[:expires_in]
+      storage_expires_in(time, bucket) if !time.nil?
+      is_counter = options[:counter]
+      
+      self.class_eval do
+        if is_counter
+          define_method "store_#{bucket}" do |value|
+            Frivol::Helpers.store_counter(self, bucket, value)
+          end
+      
+          define_method "retrieve_#{bucket}" do |default|
+            Frivol::Helpers.retrieve_counter(self, bucket, default)
+          end
+
+          define_method "increment_#{bucket}" do
+            Frivol::Helpers.increment_counter(self, bucket)
+          end
+        else
+          define_method "store_#{bucket}" do |keys_and_values|
+            hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            keys_and_values.each do |key, value|
+              hash[key.to_s] = value
+            end
+            Frivol::Helpers.store_hash(self, hash, bucket)
+          end
+      
+          define_method "retrieve_#{bucket}" do |keys_and_defaults|
+            hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            result = keys_and_defaults.map do |key, default|
+              hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
+            end
+            return result.first if result.size == 1
+            result
+          end
+        end
+      end
+    end
+    
+    # def storage_default(keys_and_defaults)
+    #   @frivol_defaults ||= {}
+    #   @frivol_defaults.merge keys_and_defaults
+    # end
   end
   
   def self.included(host) #:nodoc:

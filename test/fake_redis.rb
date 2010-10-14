@@ -21,11 +21,15 @@ class Redis
     @expires[key] = nil
   end
   
+  def incr(key)
+    @storage[key] += 1
+  end
+  
   def expire(key, time)
     @expires[key] = Time.now + time
   end
   
-  def flush_db
+  def flushdb
     @storage = {}
   end
 end
