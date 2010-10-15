@@ -107,6 +107,24 @@ Module <a href="Frivol/Config.html" class="link">Frivol::Config</a><br />
 
     </div>
 
+    <div id="constants-list">
+      <h3 class="section-bar">Constants</h3>
+
+      <div class="name-list">
+        <table summary="Constants">
+        <tr class="top-aligned-row context-row">
+          <td class="context-item-name">NEVER_EXPIRE</td>
+          <td>=</td>
+          <td class="context-item-value">nil</td>
+          <td width="3em">&nbsp;</td>
+          <td class="context-item-desc">
+Defines a constant to indicate that storage should never expire
+
+</td>
+        </tr>
+        </table>
+      </div>
+    </div>
 
 
 
@@ -121,7 +139,8 @@ Module <a href="Frivol/Config.html" class="link">Frivol::Config</a><br />
         <a name="M000005"></a>
 
         <div class="method-heading">
-          <a href="#M000005" class="method-signature">
+          <a href="Frivol.src/M000005.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000005.html');return false;">
           <span class="method-name">delete_storage</span><span class="method-args">()</span>
           </a>
         </div>
@@ -130,16 +149,6 @@ Module <a href="Frivol/Config.html" class="link">Frivol::Config</a><br />
           <p>
 Deletes the stored values.
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000005-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000005-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 105</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">delete_storage</span>
-    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Helpers</span>.<span class="ruby-identifier">delete_hash</span> <span class="ruby-keyword kw">self</span>
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
@@ -147,8 +156,9 @@ Deletes the stored values.
         <a name="M000006"></a>
 
         <div class="method-heading">
-          <a href="#M000006" class="method-signature">
-          <span class="method-name">expire_storage</span><span class="method-args">(time)</span>
+          <a href="Frivol.src/M000006.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000006.html');return false;">
+          <span class="method-name">expire_storage</span><span class="method-args">(time, bucket = nil)</span>
           </a>
         </div>
       
@@ -156,17 +166,6 @@ Deletes the stored values.
           <p>
 Expire the stored data in <tt>time</tt> seconds.
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000006-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000006-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 110</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">expire_storage</span>(<span class="ruby-identifier">time</span>)
-    <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">nil?</span>
-    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Config</span>.<span class="ruby-identifier">redis</span>.<span class="ruby-identifier">expire</span> <span class="ruby-identifier">storage_key</span>, <span class="ruby-identifier">time</span>
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
@@ -174,7 +173,8 @@ Expire the stored data in <tt>time</tt> seconds.
         <a name="M000004"></a>
 
         <div class="method-heading">
-          <a href="#M000004" class="method-signature">
+          <a href="Frivol.src/M000004.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000004.html');return false;">
           <span class="method-name">retrieve</span><span class="method-args">(keys_and_defaults)</span>
           </a>
         </div>
@@ -198,21 +198,6 @@ to get the default from a method named after that symbol. If the class does
 not <tt>respond_to?</tt> a method by that name, the symbol will assumed to
 be the default.
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000004-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000004-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 95</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">retrieve</span>(<span class="ruby-identifier">keys_and_defaults</span>)
-    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Helpers</span>.<span class="ruby-identifier">retrieve_hash</span> <span class="ruby-keyword kw">self</span>
-    <span class="ruby-identifier">result</span> = <span class="ruby-identifier">keys_and_defaults</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">default</span><span class="ruby-operator">|</span>
-      <span class="ruby-ivar">@frivol_hash</span>[<span class="ruby-identifier">key</span>.<span class="ruby-identifier">to_s</span>] <span class="ruby-operator">||</span> (<span class="ruby-identifier">default</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">default</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">send</span>(<span class="ruby-identifier">default</span>)) <span class="ruby-operator">||</span> <span class="ruby-identifier">default</span>
-    <span class="ruby-keyword kw">end</span>
-    <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">first</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">result</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
-    <span class="ruby-identifier">result</span>
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
@@ -220,8 +205,9 @@ be the default.
         <a name="M000007"></a>
 
         <div class="method-heading">
-          <a href="#M000007" class="method-signature">
-          <span class="method-name">storage_key</span><span class="method-args">()</span>
+          <a href="Frivol.src/M000007.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000007.html');return false;">
+          <span class="method-name">storage_key</span><span class="method-args">(bucket = nil)</span>
           </a>
         </div>
       
@@ -231,20 +217,15 @@ The base key used for storage in Redis.
 </p>
 <p>
 This method has been implemented for use with ActiveRecord and uses
-<tt>&quot;#{self.class.name}-#{id}&quot;</tt> If you are not using
-ActiveRecord, or using classes that don&#8216;t respond to id, you should
-override this method in your class.
+<tt>&quot;#{self.class.name}-#{id}&quot;</tt> for the default bucket and
+<tt>&quot;#{self.class.name}-#{id}-#{bucket}&quot;</tt> for a named bucket.
+If you are not using ActiveRecord, or using classes that don&#8216;t
+respond to id, you should override this method in your class.
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000007-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000007-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 120</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">storage_key</span>
-    <span class="ruby-ivar">@frivol_key</span> <span class="ruby-operator">||=</span> <span class="ruby-node">&quot;#{self.class.name}-#{id}&quot;</span>
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
+<p>
+NOTE: This method has changed since version 0.1.4, and now has the bucket
+parameter (default: nil)
+</p>
         </div>
       </div>
 
@@ -252,7 +233,8 @@ override this method in your class.
         <a name="M000003"></a>
 
         <div class="method-heading">
-          <a href="#M000003" class="method-signature">
+          <a href="Frivol.src/M000003.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000003.html');return false;">
           <span class="method-name">store</span><span class="method-args">(keys_and_values)</span>
           </a>
         </div>
@@ -271,20 +253,6 @@ call <tt><a href="Frivol.html#M000003">store</a> :value2 =&gt; 2</tt> and
 retrieves data is intended to be hidden and while it is true that it
 currently uses a <tt>Hash#to_json</tt> you should not rely on this.
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000003-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000003-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 78</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">store</span>(<span class="ruby-identifier">keys_and_values</span>)
-    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Helpers</span>.<span class="ruby-identifier">retrieve_hash</span> <span class="ruby-keyword kw">self</span>
-    <span class="ruby-identifier">keys_and_values</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
-      <span class="ruby-ivar">@frivol_hash</span>[<span class="ruby-identifier">key</span>.<span class="ruby-identifier">to_s</span>] = <span class="ruby-identifier">value</span>
-    <span class="ruby-keyword kw">end</span>
-    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Helpers</span>.<span class="ruby-identifier">store_hash</span> <span class="ruby-keyword kw">self</span>
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 

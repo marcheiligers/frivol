@@ -56,7 +56,7 @@
     </tr>
     <tr class="top-aligned-row">
       <td><strong>Last Update:</strong></td>
-      <td>Sun Aug 22 15:18:58 +0200 2010</td>
+      <td>Fri Oct 15 11:30:46 +0200 2010</td>
     </tr>
     </table>
   </div>
@@ -79,9 +79,9 @@ really.
 I developed <a href="../../classes/Frivol.html">Frivol</a> secifically for
 use in Mad Mimi (<a href="http://madmimi.com">madmimi.com</a>) to help with
 caching of data which requires fairly long running (multi-second) database
-queries, and also to aid with communication of status from background tasks
-running in Resque on workers to the front end web servers. Redis was chosen
-because we already had Resque, which is Redis-backed. Also, unlike
+queries, and also to aid with communication of status from background
+Resque jobs running on the workers to the front end web servers. Redis was
+chosen because we already had Resque, which is Redis-backed. Also, unlike
 memcached, Redis persists it&#8216;s data to disk, meaning there is far
 less warmup required when a hot system is restarted. <a
 href="../../classes/Frivol.html">Frivol</a>&#8216;s design is such that it
@@ -117,6 +117,35 @@ href="../../classes/Frivol.html">Frivol</a> will check if the class
 The <tt>expire_storage(time)</tt> method can be used to set the expiry time
 in seconds of the temporary storage. The default is not to expire the
 storage, in which case it will live for as long as Redis keeps it.
+<tt>delete_storage</tt>, as the name suggests will immediately delete the
+storage.
+</p>
+<p>
+Since version 0.1.5 <a href="../../classes/Frivol.html">Frivol</a> can
+create different storage buckets. Note that this introduces a breaking
+change to the <tt>storage_key</tt> method if you have overriden it. It now
+takes a <tt>bucket</tt> parameter.
+</p>
+<p>
+Buckets can have their own expiry time and there are special counter
+buckets which simply keep an integer count.
+</p>
+<pre>
+  storage_bucket :my_bucket, :expires_in =&gt; 5.minutes
+  storage_bucket :my_counter, :counter =&gt; true
+</pre>
+<p>
+Given the above, <a href="../../classes/Frivol.html">Frivol</a> will create
+<tt>store_my_bucket</tt> and <tt>retrieve_my_bucket</tt> methods which work
+exactly like the standard <tt>store</tt> and <tt>retrieve</tt> methods.
+There will also be <tt>store_my_counter</tt>, <tt>retrieve_my_counter</tt>
+and <tt>increment_my_counter</tt> methods. The counter store and retrieve
+only take a integer (value and default, respectively) and the increment
+does not take a parameter.
+</p>
+<p>
+These methods are thread safe if you pass <tt>:thread_safe =&gt; true</tt>
+to the Redis configuration.
 </p>
 <p>
 <a href="../../classes/Frivol.html">Frivol</a> uses the
@@ -140,8 +169,8 @@ JSON, which currently used to store data in Redis.
       @key = key
     end
 
-    def storage_key
-      &quot;frivol-test-#{key}&quot; # override the storage key because we don't respond_to? id
+    def storage_key(bucket = nil)
+      &quot;frivol-test-#{key}&quot; # override the storage key because we don't respond_to? :id, and don't care about buckets
     end
 
     def big_complex_calc

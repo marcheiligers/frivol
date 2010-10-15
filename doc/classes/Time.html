@@ -123,7 +123,8 @@ href="Time.html#M000001">to_json</a></tt> and deserialized by
         <a name="M000002"></a>
 
         <div class="method-heading">
-          <a href="#M000002" class="method-signature">
+          <a href="Time.src/M000002.html" target="Code" class="method-signature"
+            onclick="popupCode('Time.src/M000002.html');return false;">
           <span class="method-name">json_create</span><span class="method-args">(o)</span>
           </a>
         </div>
@@ -132,16 +133,6 @@ href="Time.html#M000001">to_json</a></tt> and deserialized by
           <p>
 Deserialize from JSON
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000002-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000002-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 217</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">json_create</span>(<span class="ruby-identifier">o</span>)
-    <span class="ruby-constant">Time</span>.<span class="ruby-identifier">parse</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">o</span>[<span class="ruby-value str">'data'</span>])
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
@@ -151,7 +142,8 @@ Deserialize from JSON
         <a name="M000001"></a>
 
         <div class="method-heading">
-          <a href="#M000001" class="method-signature">
+          <a href="Time.src/M000001.html" target="Code" class="method-signature"
+            onclick="popupCode('Time.src/M000001.html');return false;">
           <span class="method-name">to_json</span><span class="method-args">(*a)</span>
           </a>
         </div>
@@ -160,19 +152,6 @@ Deserialize from JSON
           <p>
 Serialize to JSON
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000001-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000001-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 209</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_json</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">a</span>)
-    {
-      <span class="ruby-value str">'json_class'</span>   =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">name</span>,
-      <span class="ruby-value str">'data'</span>         =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">to_s</span>
-    }.<span class="ruby-identifier">to_json</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">a</span>)
-  <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 

@@ -90,9 +90,9 @@ with an optional storage expiry parameter
       <h3 class="section-bar">Methods</h3>
 
       <div class="name-list">
-      <a href="#M000012">include_in</a>&nbsp;&nbsp;
-      <a href="#M000011">redis</a>&nbsp;&nbsp;
-      <a href="#M000010">redis_config=</a>&nbsp;&nbsp;
+      <a href="#M000013">include_in</a>&nbsp;&nbsp;
+      <a href="#M000012">redis</a>&nbsp;&nbsp;
+      <a href="#M000011">redis_config=</a>&nbsp;&nbsp;
       </div>
     </div>
 
@@ -114,11 +114,12 @@ with an optional storage expiry parameter
     <div id="methods">
       <h3 class="section-bar">Public Class methods</h3>
 
-      <div id="method-M000012" class="method-detail">
-        <a name="M000012"></a>
+      <div id="method-M000013" class="method-detail">
+        <a name="M000013"></a>
 
         <div class="method-heading">
-          <a href="#M000012" class="method-signature">
+          <a href="Config.src/M000013.html" target="Code" class="method-signature"
+            onclick="popupCode('Config.src/M000013.html');return false;">
           <span class="method-name">include_in</span><span class="method-args">(host_class, storage_expires_in = nil)</span>
           </a>
         </div>
@@ -139,25 +140,15 @@ For example, you might have the following in environment.rb:
 Which would include <a href="../Frivol.html">Frivol</a> in
 ActiveRecord::Base and set the default storage expiry to 10 minutes
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000012-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000012-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 151</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">include_in</span>(<span class="ruby-identifier">host_class</span>, <span class="ruby-identifier">storage_expires_in</span> = <span class="ruby-keyword kw">nil</span>)
-      <span class="ruby-identifier">host_class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">:include</span>, <span class="ruby-constant">Frivol</span>)
-      <span class="ruby-identifier">host_class</span>.<span class="ruby-identifier">storage_expires_in</span> <span class="ruby-identifier">storage_expires_in</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">storage_expires_in</span>
-    <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
-      <div id="method-M000011" class="method-detail">
-        <a name="M000011"></a>
+      <div id="method-M000012" class="method-detail">
+        <a name="M000012"></a>
 
         <div class="method-heading">
-          <a href="#M000011" class="method-signature">
+          <a href="Config.src/M000012.html" target="Code" class="method-signature"
+            onclick="popupCode('Config.src/M000012.html');return false;">
           <span class="method-name">redis</span><span class="method-args">()</span>
           </a>
         </div>
@@ -166,24 +157,15 @@ ActiveRecord::Base and set the default storage expiry to 10 minutes
           <p>
 Returns the configured Redis instance
 </p>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000011-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000011-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 141</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">redis</span>
-      <span class="ruby-ivar">@@redis</span>
-    <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 
-      <div id="method-M000010" class="method-detail">
-        <a name="M000010"></a>
+      <div id="method-M000011" class="method-detail">
+        <a name="M000011"></a>
 
         <div class="method-heading">
-          <a href="#M000010" class="method-signature">
+          <a href="Config.src/M000011.html" target="Code" class="method-signature"
+            onclick="popupCode('Config.src/M000011.html');return false;">
           <span class="method-name">redis_config=</span><span class="method-args">(config)</span>
           </a>
         </div>
@@ -202,16 +184,6 @@ Expects a hash such as
   }
   Frivol::Config.redis_config = REDIS_CONFIG
 </pre>
-          <p><a class="source-toggle" href="#"
-            onclick="toggleCode('M000010-source');return false;">[Source]</a></p>
-          <div class="method-source-code" id="M000010-source">
-<pre>
-<span class="ruby-comment cmt"># File lib/frivol.rb, line 136</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">redis_config=</span>(<span class="ruby-identifier">config</span>)
-      <span class="ruby-ivar">@@redis</span> = <span class="ruby-constant">Redis</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">config</span>)
-    <span class="ruby-keyword kw">end</span>
-</pre>
-          </div>
         </div>
       </div>
 

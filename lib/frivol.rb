@@ -28,6 +28,21 @@
 # The <tt>expire_storage(time)</tt> method can be used to set the expiry time in seconds of the temporary storage. 
 # The default is not to expire the storage, in which case it will live for as long as Redis keeps it. 
 # <tt>delete_storage</tt>, as the name suggests will immediately delete the storage.
+#
+# Since version 0.1.5 Frivol can create different storage buckets. Note that this introduces a breaking change
+# to the <tt>storage_key</tt> method if you have overriden it. It now takes a +bucket+ parameter.
+#
+# Buckets can have their own expiry time and there are special counter buckets which simply keep an integer count.
+#
+#   storage_bucket :my_bucket, :expires_in => 5.minutes
+#   storage_bucket :my_counter, :counter => true
+#
+# Given the above, Frivol will create <tt>store_my_bucket</tt> and <tt>retrieve_my_bucket</tt> methods which work
+# exactly like the standard +store+ and +retrieve+ methods. There will also be <tt>store_my_counter</tt>,
+# <tt>retrieve_my_counter</tt> and <tt>increment_my_counter</tt> methods. The counter store and retrieve only
+# take a integer (value and default, respectively) and the increment does not take a parameter.
+# 
+# These methods are thread safe if you pass <tt>:thread_safe => true</tt> to the Redis configuration.
 # 
 # Frivol uses the +storage_key+ method to create a base key for storage in Redis. The current implementation uses
 # <tt>"#{self.class.name}-#{id}"</tt> so you'll want to override that method if you have classes that don't

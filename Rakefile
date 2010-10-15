@@ -11,7 +11,7 @@ begin
     gem.homepage = "http://github.com/marcheiligers/frivol"
     gem.authors = ["Marc Heiligers"]
     gem.add_dependency "json", ">= 1.2.0"
-    gem.add_dependency "redis", ">= 0.1.2"
+    gem.add_dependency "redis", ">= 2.0.10"
     gem.add_development_dependency "shoulda", ">= 2.11.1"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
