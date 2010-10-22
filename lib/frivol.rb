@@ -27,7 +27,8 @@
 #
 # The <tt>expire_storage(time)</tt> method can be used to set the expiry time in seconds of the temporary storage. 
 # The default is not to expire the storage, in which case it will live for as long as Redis keeps it. 
-# <tt>delete_storage</tt>, as the name suggests will immediately delete the storage.
+# <tt>delete_storage</tt>, as the name suggests will immediately delete the storage, while <tt>clear_storage</tt>
+# will clear the cache that Frivol keeps and force the next <tt>retrieve</tt> to return to Redis for the data.
 #
 # Since version 0.1.5 Frivol can create different storage buckets. Note that this introduces a breaking change
 # to the <tt>storage_key</tt> method if you have overriden it. It now takes a +bucket+ parameter.
@@ -120,9 +121,14 @@ module Frivol
     result
   end
   
-  # Deletes the stored values.
+  # Deletes the stored values (and clears the cache).
   def delete_storage
     Frivol::Helpers.delete_hash self
+  end
+  
+  # Clears the cached values and forces the next retrieve to fetch from Redis.
+  def clear_storage
+    Frivol::Helpers.clear_hash self
   end
   
   # Expire the stored data in +time+ seconds.
@@ -179,7 +185,7 @@ module Frivol
   
   module Helpers #:nodoc:
     def self.store_hash(instance, hash, bucket = nil)
-      data, is_new = get_hash_and_is_new(instance, bucket)
+      data, is_new = get_data_and_is_new instance
       data[bucket.to_s] = hash
       
       key = instance.send(:storage_key, bucket)
@@ -190,39 +196,49 @@ module Frivol
         Frivol::Config.redis.expire(key, time) if time != Frivol::NEVER_EXPIRE
         is_new[bucket.to_s] = false
       end
+      
+      self.set_data_and_is_new instance, data, is_new
     end
 
     def self.retrieve_hash(instance, bucket = nil)
-      data, is_new = get_hash_and_is_new(instance, bucket)
+      data, is_new = get_data_and_is_new instance
       return data[bucket.to_s] if data.key?(bucket.to_s)
       key = instance.send(:storage_key, bucket)
       json = Frivol::Config.redis[key]
       
       is_new[bucket.to_s] = json.nil?
-      instance.instance_variable_set :@frivol_is_new, is_new
       
       hash = json.nil? ? {} : JSON.parse(json)
       data[bucket.to_s] = hash
-      instance.instance_variable_set :@frivol_data, data
       
+      self.set_data_and_is_new instance, data, is_new
       hash
     end
     
     def self.delete_hash(instance, bucket = nil)
       key = instance.send(:storage_key, bucket)
       Frivol::Config.redis.del key
-      
+      clear_hash(instance, bucket)
+    end
+    
+    def self.clear_hash(instance, bucket = nil)
+      key = instance.send(:storage_key, bucket)
       data = instance.instance_variable_defined?(:@frivol_data) ? instance.instance_variable_get(:@frivol_data) : {}
       data.delete(bucket.to_s)
       instance.instance_variable_set :@frivol_data, data
     end
     
-    def self.get_hash_and_is_new(instance, bucket)
+    def self.get_data_and_is_new(instance)
       data = instance.instance_variable_defined?(:@frivol_data) ? instance.instance_variable_get(:@frivol_data) : {}
       is_new = instance.instance_variable_defined?(:@frivol_is_new) ? instance.instance_variable_get(:@frivol_is_new) : {}
       [data, is_new]
     end
 
+    def self.set_data_and_is_new(instance, data, is_new)
+      instance.instance_variable_set :@frivol_data, data
+      instance.instance_variable_set :@frivol_is_new, is_new
+    end
+    
     def self.store_counter(instance, counter, value)
       key = instance.send(:storage_key, counter)
       Frivol::Config.redis[key] = value
@@ -308,6 +324,14 @@ module Frivol
             return result.first if result.size == 1
             result
           end
+        end
+        
+        define_method "delete_#{bucket}" do
+          Frivol::Helpers.delete_hash(self, bucket)
+        end
+        
+        define_method "clear_#{bucket}" do
+          Frivol::Helpers.clear_hash(self, bucket)
         end
       end
     end

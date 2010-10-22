@@ -4,6 +4,7 @@ class TestFrivol < Test::Unit::TestCase
   def setup 
     # fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
+    Frivol::Config.redis.flushdb
   end
   
   def teardown
@@ -258,6 +259,7 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 11, t.load_blue
   end
 
+  # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
   should "have thread safe counters" do
     class ThreadCounterTestClass < TestClass
       storage_bucket :blue, :counter => true
@@ -288,4 +290,46 @@ class TestFrivol < Test::Unit::TestCase
       
     assert_equal 1010, t.load_blue
   end
+  
+  should "be able to delete storage for a bucket" do
+    class DeleteBucketTestClass < TestClass
+      storage_bucket :silver
+      
+      def save_silver
+        store_silver :value => "value"
+      end
+      
+      def load_silver
+        retrieve_silver :value => "default"
+      end
+    end
+    t = DeleteBucketTestClass.new
+    t.save_silver
+    assert_equal "value", t.load_silver
+    t.delete_silver
+    assert_equal "default", t.load_silver
+  end
+  
+  should "be able to clear cached storage for a bucket" do
+    class ClearBucketTestClass < TestClass
+      storage_bucket :gold
+      
+      def save_gold
+        store_gold :value => "value"
+      end
+      
+      def load_gold
+        retrieve_gold :value => "default"
+      end
+    end
+    t = ClearBucketTestClass.new
+    t.save_gold
+    assert_equal "value", t.load_gold
+    t.clear_gold
+    # ensure we're getting the result from Redis and not the cache
+    Frivol::Config.redis.expects(:[]).with(t.storage_key(:gold)).once.returns({ :value => "value" }.to_json)
+    assert_equal "value", t.load_gold
+  end
+  
+  
 end

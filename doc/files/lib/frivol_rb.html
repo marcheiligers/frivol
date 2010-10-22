@@ -56,7 +56,7 @@
     </tr>
     <tr class="top-aligned-row">
       <td><strong>Last Update:</strong></td>
-      <td>Fri Oct 15 11:30:46 +0200 2010</td>
+      <td>Fri Oct 22 14:36:50 +0200 2010</td>
     </tr>
     </table>
   </div>
@@ -118,7 +118,9 @@ The <tt>expire_storage(time)</tt> method can be used to set the expiry time
 in seconds of the temporary storage. The default is not to expire the
 storage, in which case it will live for as long as Redis keeps it.
 <tt>delete_storage</tt>, as the name suggests will immediately delete the
-storage.
+storage, while <tt>clear_storage</tt> will clear the cache that <a
+href="../../classes/Frivol.html">Frivol</a> keeps and force the next
+<tt>retrieve</tt> to return to Redis for the data.
 </p>
 <p>
 Since version 0.1.5 <a href="../../classes/Frivol.html">Frivol</a> can

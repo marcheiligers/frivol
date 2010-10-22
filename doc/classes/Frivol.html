@@ -84,10 +84,11 @@
       <h3 class="section-bar">Methods</h3>
 
       <div class="name-list">
+      <a href="#M000006">clear_storage</a>&nbsp;&nbsp;
       <a href="#M000005">delete_storage</a>&nbsp;&nbsp;
-      <a href="#M000006">expire_storage</a>&nbsp;&nbsp;
+      <a href="#M000007">expire_storage</a>&nbsp;&nbsp;
       <a href="#M000004">retrieve</a>&nbsp;&nbsp;
-      <a href="#M000007">storage_key</a>&nbsp;&nbsp;
+      <a href="#M000008">storage_key</a>&nbsp;&nbsp;
       <a href="#M000003">store</a>&nbsp;&nbsp;
       </div>
     </div>
@@ -135,6 +136,24 @@ Defines a constant to indicate that storage should never expire
     <div id="methods">
       <h3 class="section-bar">Public Instance methods</h3>
 
+      <div id="method-M000006" class="method-detail">
+        <a name="M000006"></a>
+
+        <div class="method-heading">
+          <a href="Frivol.src/M000006.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000006.html');return false;">
+          <span class="method-name">clear_storage</span><span class="method-args">()</span>
+          </a>
+        </div>
+      
+        <div class="method-description">
+          <p>
+Clears the cached values and forces the next <a
+href="Frivol.html#M000004">retrieve</a> to fetch from Redis.
+</p>
+        </div>
+      </div>
+
       <div id="method-M000005" class="method-detail">
         <a name="M000005"></a>
 
@@ -147,17 +166,17 @@ Defines a constant to indicate that storage should never expire
       
         <div class="method-description">
           <p>
-Deletes the stored values.
+Deletes the stored values (and clears the cache).
 </p>
         </div>
       </div>
 
-      <div id="method-M000006" class="method-detail">
-        <a name="M000006"></a>
+      <div id="method-M000007" class="method-detail">
+        <a name="M000007"></a>
 
         <div class="method-heading">
-          <a href="Frivol.src/M000006.html" target="Code" class="method-signature"
-            onclick="popupCode('Frivol.src/M000006.html');return false;">
+          <a href="Frivol.src/M000007.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000007.html');return false;">
           <span class="method-name">expire_storage</span><span class="method-args">(time, bucket = nil)</span>
           </a>
         </div>
@@ -201,12 +220,12 @@ be the default.
         </div>
       </div>
 
-      <div id="method-M000007" class="method-detail">
-        <a name="M000007"></a>
+      <div id="method-M000008" class="method-detail">
+        <a name="M000008"></a>
 
         <div class="method-heading">
-          <a href="Frivol.src/M000007.html" target="Code" class="method-signature"
-            onclick="popupCode('Frivol.src/M000007.html');return false;">
+          <a href="Frivol.src/M000008.html" target="Code" class="method-signature"
+            onclick="popupCode('Frivol.src/M000008.html');return false;">
           <span class="method-name">storage_key</span><span class="method-args">(bucket = nil)</span>
           </a>
         </div>

@@ -5,15 +5,15 @@
 
 <html>
 <head>
-  <title>storage_key (Frivol)</title>
+  <title>expire_storage (Frivol)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/frivol.rb, line 142</span>
-  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">storage_key</span>(<span class="ruby-identifier">bucket</span> = <span class="ruby-keyword kw">nil</span>)
-    <span class="ruby-ivar">@frivol_key</span> <span class="ruby-operator">||=</span> <span class="ruby-node">&quot;#{self.class.name}-#{id}&quot;</span>
-    <span class="ruby-identifier">bucket</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-value">? </span><span class="ruby-ivar">@frivol_key</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot;#{@frivol_key}-#{bucket}&quot;</span>
+  <pre><span class="ruby-comment cmt"># File lib/frivol.rb, line 135</span>
+  <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">expire_storage</span>(<span class="ruby-identifier">time</span>, <span class="ruby-identifier">bucket</span> = <span class="ruby-keyword kw">nil</span>)
+    <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">nil?</span>
+    <span class="ruby-constant">Frivol</span><span class="ruby-operator">::</span><span class="ruby-constant">Config</span>.<span class="ruby-identifier">redis</span>.<span class="ruby-identifier">expire</span> <span class="ruby-identifier">storage_key</span>(<span class="ruby-identifier">bucket</span>), <span class="ruby-identifier">time</span>
   <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>

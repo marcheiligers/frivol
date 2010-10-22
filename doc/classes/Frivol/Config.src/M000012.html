@@ -5,14 +5,14 @@
 
 <html>
 <head>
-  <title>redis (Frivol::Config)</title>
+  <title>redis_config= (Frivol::Config)</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/frivol.rb, line 164</span>
-    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">redis</span>
-      <span class="ruby-ivar">@@redis</span>
+  <pre><span class="ruby-comment cmt"># File lib/frivol.rb, line 165</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">redis_config=</span>(<span class="ruby-identifier">config</span>)
+      <span class="ruby-ivar">@@redis</span> = <span class="ruby-constant">Redis</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">config</span>)
     <span class="ruby-keyword kw">end</span></pre>
 </body>
 </html>
