@@ -1,4 +1,4 @@
-require 'helper'
+  require 'helper'
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
@@ -257,6 +257,26 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 10, t.load_blue
     assert_equal 11, t.increment_blue
     assert_equal 11, t.load_blue
+  end
+  
+  should "expire a counter bucket" do
+    class ExpireCounterTestClass < TestClass
+      storage_bucket :kitten_grave, :counter => true, :expires_in => 0.5
+
+      def bury_kittens
+        store_kitten_grave 10
+      end
+      
+      def peek_in_grave
+        retrieve_kitten_grave 0
+      end
+    end
+    k = ExpireCounterTestClass.new
+    k.bury_kittens
+    assert_equal 10, k.peek_in_grave
+    sleep(0.6)
+    assert_equal 0, k.peek_in_grave  
+    
   end
 
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
