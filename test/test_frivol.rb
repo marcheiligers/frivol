@@ -1,8 +1,8 @@
-  require 'helper'
+require 'helper'
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    # fake_redis # Comment out this line to test against a real live Redis
+    fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
     Frivol::Config.redis.flushdb
   end
@@ -259,6 +259,14 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 11, t.load_blue
   end
   
+  should "set expiry on counters" do
+    class SetExpireCounterTestClass < TestClass
+      storage_bucket :sheep_counter, :counter => true, :expires_in => 0.5
+    end
+    t = SetExpireCounterTestClass.new
+    assert_equal 0.5, SetExpireCounterTestClass.storage_expiry(:sheep_counter)  
+  end
+
   should "expire a counter bucket" do
     class ExpireCounterTestClass < TestClass
       storage_bucket :kitten_grave, :counter => true, :expires_in => 0.5

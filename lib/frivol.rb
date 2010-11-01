@@ -241,7 +241,12 @@ module Frivol
     
     def self.store_counter(instance, counter, value)
       key = instance.send(:storage_key, counter)
+      is_new = !Frivol::Config.redis.exists(key)
       Frivol::Config.redis[key] = value
+      if is_new
+        time = instance.class.storage_expiry(counter)
+        Frivol::Config.redis.expire(key, time) if time != Frivol::NEVER_EXPIRE
+      end
     end
     
     def self.retrieve_counter(instance, counter, default)

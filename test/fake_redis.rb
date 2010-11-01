@@ -29,6 +29,10 @@ class Redis
     @expires[key] = Time.now + time
   end
   
+  def exists(key)
+    @storage.key? key
+  end
+  
   def flushdb
     @storage = {}
   end
