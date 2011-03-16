@@ -188,16 +188,24 @@ module Frivol
       data, is_new = get_data_and_is_new instance
       data[bucket.to_s] = hash
       
-      key = instance.send(:storage_key, bucket)
-      Frivol::Config.redis[key] = hash.to_json
-      
-      if is_new[bucket.to_s]
-        time = instance.class.storage_expiry(bucket)
-        Frivol::Config.redis.expire(key, time) if time != Frivol::NEVER_EXPIRE
-        is_new[bucket.to_s] = false
-      end
+      store_value instance, is_new[bucket.to_s], hash.to_json, bucket
       
       self.set_data_and_is_new instance, data, is_new
+    end
+    
+    def self.store_value(instance, is_new, value, bucket = nil)
+      key = instance.send(:storage_key, bucket)
+
+      Frivol::Config.redis.multi do |redis|
+        time = instance.class.storage_expiry(bucket)
+        if time != Frivol::NEVER_EXPIRE
+          time = redis.ttl(key) unless is_new
+          redis[key] = value
+          redis.expire(key, time)
+        else
+          redis[key] = value
+        end
+      end
     end
 
     def self.retrieve_hash(instance, bucket = nil)
@@ -242,11 +250,7 @@ module Frivol
     def self.store_counter(instance, counter, value)
       key = instance.send(:storage_key, counter)
       is_new = !Frivol::Config.redis.exists(key)
-      Frivol::Config.redis[key] = value
-      if is_new
-        time = instance.class.storage_expiry(counter)
-        Frivol::Config.redis.expire(key, time) if time != Frivol::NEVER_EXPIRE
-      end
+      store_value instance, is_new, value, counter
     end
     
     def self.retrieve_counter(instance, counter, default)

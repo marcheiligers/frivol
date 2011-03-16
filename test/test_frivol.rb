@@ -1,4 +1,4 @@
-require 'helper'
+require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
@@ -8,6 +8,7 @@ class TestFrivol < Test::Unit::TestCase
   end
   
   def teardown
+    # puts Frivol::Config.redis.inspect
     Frivol::Config.redis.flushdb
   end
   
@@ -114,22 +115,24 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal Time.local(2010, 8, 20), t.load
   end
   
-  should "expire storage the first time it's stored" do
+  should "expire storage the everytime time it's stored" do
     class ExpiryTestClass < TestClass
       storage_expires_in 60
     end
     
-    Frivol::Config.redis.expects(:expire).once
+    Frivol::Config.redis.expects(:expire).twice
+    Frivol::Config.redis.expects(:ttl).once
     t = ExpiryTestClass.new
     t.load
     t.save
+    t = ExpiryTestClass.new # get a new one
     t.save
   end
   
   should "expires should not throw nasty errors" do
     t = TestClass.new
     t.save
-    t.expire_storage 0.5
+    t.expire_storage 1
     sleep 1
     t = TestClass.new # Get a fresh instance so that the @frivol_data is empty
     assert_equal "default", t.load
@@ -137,15 +140,27 @@ class TestFrivol < Test::Unit::TestCase
   
   should "use default expiry set on the class" do
     class ExpiryTestClass < TestClass
-      storage_expires_in 0.5
+      storage_expires_in 1
     end
     t = ExpiryTestClass.new
     t.save
     sleep 1
-    t = TestClass.new # Get a fresh instance so that the @frivol_data is empty
+    t = ExpiryTestClass.new # Get a fresh instance so that the @frivol_data is empty
     assert_equal "default", t.load
   end
 
+  # If you save a value to a volatile key, the expiry is cleared
+  should "resaving a value should not clear the expiry" do
+    class ResavingExpiryTestClass < TestClass
+      storage_expires_in 2
+    end
+    t = ResavingExpiryTestClass.new
+    t.save
+    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+    t.save # a second time
+    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+  end
+  
   should "be able to include in other classes with storage expiry" do
     class BlankTestClass
     end
@@ -199,17 +214,17 @@ class TestFrivol < Test::Unit::TestCase
 
   should "have different expiry times for different buckets" do
     class ExpireBucketsTestClass < TestClass
-      storage_bucket :blue, :expires_in => 0.5
+      storage_bucket :blue, :expires_in => 1
       storage_expires_in 2
     end
     t = ExpireBucketsTestClass.new
-    assert_equal 0.5, ExpireBucketsTestClass.storage_expiry(:blue)
+    assert_equal 1, ExpireBucketsTestClass.storage_expiry(:blue)
     assert_equal 2, ExpireBucketsTestClass.storage_expiry
   end
 
   should "expire data in buckets" do
     class ExpireBucketsTestClass < TestClass
-      storage_bucket :blue, :expires_in => 0.5
+      storage_bucket :blue, :expires_in => 1
       storage_expires_in 2
       
       def save_blue
@@ -261,15 +276,15 @@ class TestFrivol < Test::Unit::TestCase
   
   should "set expiry on counters" do
     class SetExpireCounterTestClass < TestClass
-      storage_bucket :sheep_counter, :counter => true, :expires_in => 0.5
+      storage_bucket :sheep_counter, :counter => true, :expires_in => 1
     end
     t = SetExpireCounterTestClass.new
-    assert_equal 0.5, SetExpireCounterTestClass.storage_expiry(:sheep_counter)  
+    assert_equal 1, SetExpireCounterTestClass.storage_expiry(:sheep_counter)  
   end
 
   should "expire a counter bucket" do
     class ExpireCounterTestClass < TestClass
-      storage_bucket :kitten_grave, :counter => true, :expires_in => 0.5
+      storage_bucket :kitten_grave, :counter => true, :expires_in => 1
 
       def bury_kittens
         store_kitten_grave 10
@@ -279,12 +294,13 @@ class TestFrivol < Test::Unit::TestCase
         retrieve_kitten_grave 0
       end
     end
+    
     k = ExpireCounterTestClass.new
     k.bury_kittens
     assert_equal 10, k.peek_in_grave
-    sleep(0.6)
-    assert_equal 0, k.peek_in_grave  
     
+    sleep(1.1)
+    assert_equal 0, k.peek_in_grave  
   end
 
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
