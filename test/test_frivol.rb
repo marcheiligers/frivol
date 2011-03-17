@@ -2,7 +2,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    #fake_redis # Comment out this line to test against a real live Redis
+    fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
     Frivol::Config.redis.flushdb
   end
@@ -375,5 +375,71 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal "value", t.load_gold
   end
   
+  should "frivolize methods" do
+    class FrivolizeTestClass < TestClass
+      def dinosaur_count
+        10
+      end
+      frivolize :dinosaur_count
+    end
+
+    Frivol::Config.redis.expects(:[]=).once
+    Frivol::Config.redis.expects(:[]).twice.returns(nil, { :dinosaur_count => 10 }.to_json)
+
+    t = FrivolizeTestClass.new
+    assert t.methods.include? "dinosaur_count"
+    assert t.methods.include? "frivolized_dinosaur_count"
+    
+    assert_equal 10, t.dinosaur_count
+    
+    t = FrivolizeTestClass.new # a fresh instance
+    assert_equal 10, t.dinosaur_count
+  end
+  
+  should "frivolize methods with expiry in a bucket" do
+    class FrivolizeExpiringBucketTestClass < TestClass
+      def dinosaur_count
+        10
+      end
+      frivolize :dinosaur_count, { :bucket => :dinosaurs, :expires_in => 1 }
+    end
+    Frivol::Config.redis.expects(:[]=).twice
+    Frivol::Config.redis.expects(:[]).times(3).returns(nil, { :dinosaur_count => 10 }.to_json, nil)
+
+    t = FrivolizeExpiringBucketTestClass.new
+    assert_equal 10, t.dinosaur_count
+  
+    t = FrivolizeExpiringBucketTestClass.new # a fresh instance
+    assert_equal 10, t.dinosaur_count
+    
+    sleep 2
+  
+    t = FrivolizeExpiringBucketTestClass.new # another fresh instance after value expired
+    assert_equal 10, t.dinosaur_count
+  end
+  
+  should "frivolize methods with expiry as a counter" do
+    class FrivolizeExpiringBucketTestClass < TestClass
+      def dinosaur_count
+        10
+      end
+      frivolize :dinosaur_count, { :expires_in => 1, :counter => true }
+    end
+    Frivol::Config.redis.expects(:[]=).twice
+    Frivol::Config.redis.expects(:[]).times(3).returns(nil, 10, nil)
+
+    t = FrivolizeExpiringBucketTestClass.new
+    assert t.methods.include? "store_dinosaur_count" # check that the bucket name is the method name
+
+    assert_equal 10, t.dinosaur_count
+  
+    t = FrivolizeExpiringBucketTestClass.new # a fresh instance
+    assert_equal 10, t.dinosaur_count
+    
+    sleep 2
+  
+    t = FrivolizeExpiringBucketTestClass.new # another fresh instance after value expired
+    assert_equal 10, t.dinosaur_count
+  end
   
 end

@@ -195,15 +195,14 @@ module Frivol
     
     def self.store_value(instance, is_new, value, bucket = nil)
       key = instance.send(:storage_key, bucket)
-
-      Frivol::Config.redis.multi do |redis|
-        time = instance.class.storage_expiry(bucket)
-        if time != Frivol::NEVER_EXPIRE
+      time = instance.class.storage_expiry(bucket)
+      if time == Frivol::NEVER_EXPIRE
+        Frivol::Config.redis[key] = value
+      else
+        Frivol::Config.redis.multi do |redis|
           time = redis.ttl(key) unless is_new
           redis[key] = value
           redis.expire(key, time)
-        else
-          redis[key] = value
         end
       end
     end
@@ -341,6 +340,60 @@ module Frivol
         
         define_method "clear_#{bucket}" do
           Frivol::Helpers.clear_hash(self, bucket)
+        end
+      end
+      
+      # Use Frivol to cache results for a method (similar to memoize).
+      # Options are :bucket which sets the bucket name for the storage,
+      # :expires_in which sets the expiry time for a bucket,
+      # and :counter to create a special counter storage bucket.
+      #
+      # If not :counter the key is the method_name.
+      #
+      # If you supply :expires_in you must also supply a :bucket otherwise
+      # it is ignored (and the default class expires_in is used if supplied).
+      #
+      # If :counter and no :bucket is provided the :bucket is set to the
+      # :bucket is set to the method_name (and so the :expires_in will be used).
+      def frivolize(method_name, options = {})
+        bucket = options[:bucket]
+        time = options[:expires_in]
+        is_counter = options[:counter]
+        bucket = method_name if bucket.nil? && is_counter
+        frivolized_method_name = "frivolized_#{method_name}"
+        
+        self.class_eval do
+          alias_method frivolized_method_name, method_name
+          storage_bucket(bucket, { :expires_in => time, :counter => is_counter }) unless bucket.nil?
+
+          if is_counter
+            define_method method_name do
+              value = send "retrieve_#{bucket}", -2147483647 # A rediculously small number that is unlikely to be used: -2**31 + 1
+              if value == -2147483647
+                value = send frivolized_method_name
+                send "store_#{bucket}", value
+              end
+              value
+            end
+          elsif !bucket.nil?
+            define_method method_name do
+              value = send "retrieve_#{bucket}", { method_name => false }
+              if !value
+                value = send frivolized_method_name
+                send "store_#{bucket}", { method_name => value }
+              end
+              value
+            end
+          else
+            define_method method_name do
+              value = retrieve method_name => false
+              if !value
+                value = send frivolized_method_name
+                store method_name.to_sym => value
+              end
+              value
+            end
+          end
         end
       end
     end
