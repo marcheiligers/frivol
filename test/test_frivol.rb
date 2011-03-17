@@ -2,7 +2,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    fake_redis # Comment out this line to test against a real live Redis
+    #fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
     Frivol::Config.redis.flushdb
   end
@@ -133,7 +133,7 @@ class TestFrivol < Test::Unit::TestCase
     t = TestClass.new
     t.save
     t.expire_storage 1
-    sleep 1
+    sleep 2
     t = TestClass.new # Get a fresh instance so that the @frivol_data is empty
     assert_equal "default", t.load
   end
@@ -144,7 +144,7 @@ class TestFrivol < Test::Unit::TestCase
     end
     t = ExpiryTestClass.new
     t.save
-    sleep 1
+    sleep 2
     t = ExpiryTestClass.new # Get a fresh instance so that the @frivol_data is empty
     assert_equal "default", t.load
   end
@@ -225,7 +225,7 @@ class TestFrivol < Test::Unit::TestCase
   should "expire data in buckets" do
     class ExpireBucketsTestClass < TestClass
       storage_bucket :blue, :expires_in => 1
-      storage_expires_in 2
+      storage_expires_in 3
       
       def save_blue
         store_blue :value => "blue value"
@@ -238,7 +238,7 @@ class TestFrivol < Test::Unit::TestCase
     t = ExpireBucketsTestClass.new
     t.save
     t.save_blue
-    sleep 1
+    sleep 2
     t = ExpireBucketsTestClass.new # get a new instance so @frivol_data is empty
     assert_equal "value", t.load
     assert_equal "blue default", t.load_blue
@@ -299,7 +299,7 @@ class TestFrivol < Test::Unit::TestCase
     k.bury_kittens
     assert_equal 10, k.peek_in_grave
     
-    sleep(1.1)
+    sleep 2
     assert_equal 0, k.peek_in_grave  
   end
 
