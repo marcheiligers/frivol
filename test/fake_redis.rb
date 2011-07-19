@@ -27,6 +27,21 @@ class Redis
     @storage[key] += 1
   end
   
+  def incrby(key, amount)
+    # puts "incr #{key}"
+    @storage[key] += amount
+  end
+
+  def decr(key)
+    # puts "decr #{key}"
+    @storage[key] -= 1
+  end
+  
+  def decrby(key, amount)
+    # puts "decr #{key}"
+    @storage[key] -= amount
+  end
+
   def expire(key, time)
     begin
       t = Integer(time) 

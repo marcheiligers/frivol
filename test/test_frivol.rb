@@ -2,7 +2,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    fake_redis # Comment out this line to test against a real live Redis
+    # fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
     Frivol::Config.redis.flushdb
   end
@@ -274,6 +274,56 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 11, t.load_blue
   end
   
+  should "increment by and retrieve integers in a counter" do
+    class IncrCounterByTestClass < TestClass
+      storage_bucket :cats, :counter => true
+      
+      def kittens
+        increment_cats_by 5
+      end
+    end
+    t = IncrCounterByTestClass.new
+    t.store_cats 1
+    assert_equal 1, t.retrieve_cats(0)
+    t.kittens
+    assert_equal 6, t.retrieve_cats(0)
+  end
+
+  should "store, decrement and retrieve integers in a counter" do
+    class IncrCounterTestClass < TestClass
+      storage_bucket :red, :counter => true
+      
+      def save_red
+        store_red 10
+      end
+      
+      def load_red
+        retrieve_red 0
+      end
+    end
+    t = IncrCounterTestClass.new
+    assert_equal 0, t.load_red
+    t.save_red
+    assert_equal 10, t.load_red
+    assert_equal 9, t.decrement_red
+    assert_equal 9, t.load_red
+  end
+
+  should "decrement by and retrieve integers in a counter" do
+    class DecrCounterByTestClass < TestClass
+      storage_bucket :money, :counter => true
+      
+      def shopping
+        decrement_money_by 1000
+      end
+    end
+    t = DecrCounterByTestClass.new
+    t.store_money 2000
+    assert_equal 2000, t.retrieve_money(0)
+    t.shopping
+    assert_equal 1000, t.retrieve_money(0)
+  end
+
   should "set expiry on counters" do
     class SetExpireCounterTestClass < TestClass
       storage_bucket :sheep_counter, :counter => true, :expires_in => 1

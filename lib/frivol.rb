@@ -41,7 +41,8 @@
 # Given the above, Frivol will create <tt>store_my_bucket</tt> and <tt>retrieve_my_bucket</tt> methods which work
 # exactly like the standard +store+ and +retrieve+ methods. There will also be <tt>store_my_counter</tt>,
 # <tt>retrieve_my_counter</tt> and <tt>increment_my_counter</tt> methods. The counter store and retrieve only
-# take a integer (value and default, respectively) and the increment does not take a parameter.
+# take a integer (value and default, respectively) and the increment does not take a parameter. Since version 0.2.1
+# there is also <tt>increment_my_counter_by</tt>, <tt>decrement_my_counter</tt> and <tt>decrement_my_counter_by<tt>.
 # 
 # These methods are thread safe if you pass <tt>:thread_safe => true</tt> to the Redis configuration.
 # 
@@ -200,7 +201,8 @@ module Frivol
         Frivol::Config.redis[key] = value
       else
         Frivol::Config.redis.multi do |redis|
-          time = redis.ttl(key) unless is_new
+          # TODO: write test for the to_i bug fix
+          time = redis.ttl(key).to_i unless is_new
           redis[key] = value
           redis.expire(key, time)
         end
@@ -261,6 +263,21 @@ module Frivol
       key = instance.send(:storage_key, counter)
       Frivol::Config.redis.incr(key)
     end
+    
+    def self.increment_counter_by(instance, counter, amount)
+      key = instance.send(:storage_key, counter)
+      Frivol::Config.redis.incrby(key, amount)
+    end
+
+    def self.decrement_counter(instance, counter)
+      key = instance.send(:storage_key, counter)
+      Frivol::Config.redis.decr(key)
+    end
+    
+    def self.decrement_counter_by(instance, counter, amount)
+      key = instance.send(:storage_key, counter)
+      Frivol::Config.redis.decrby(key, amount)
+    end
   end
   
   # == Frivol::ClassMethods
@@ -294,6 +311,8 @@ module Frivol
     # - store_#{bucket} only takes an integer value to store (no key)
     # - retrieve_#{bucket} only takes an integer default, and returns only the integer value
     # - there is an added increment_#{bucket} method which increments the counter by 1
+    # - as well as increment_#{bucket}_by(value) method which increments the counter by the value
+    # - and similar decrement_#{bucket} and decrement_#{bucket}_by(value) methods
     #
     # Options are :expires_in which sets the expiry time for a bucket,
     # and :counter to create a special counter storage bucket.
@@ -314,6 +333,18 @@ module Frivol
 
           define_method "increment_#{bucket}" do
             Frivol::Helpers.increment_counter(self, bucket)
+          end
+
+          define_method "increment_#{bucket}_by" do |amount|
+            Frivol::Helpers.increment_counter_by(self, bucket, amount)
+          end
+
+          define_method "decrement_#{bucket}" do
+            Frivol::Helpers.decrement_counter(self, bucket)
+          end
+
+          define_method "decrement_#{bucket}_by" do |amount|
+            Frivol::Helpers.decrement_counter_by(self, bucket, amount)
           end
         else
           define_method "store_#{bucket}" do |keys_and_values|
