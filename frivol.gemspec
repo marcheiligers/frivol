@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{frivol}
-  s.version = "0.2.0"
+  s.version = "0.2.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Marc Heiligers"]
-  s.date = %q{2011-03-17}
+  s.date = %q{2011-07-19}
   s.description = %q{Simple Redis backed temporary storage intended primarily for use with ActiveRecord models to provide caching}
   s.email = %q{marc@eternal.co.za}
   s.extra_rdoc_files = [
