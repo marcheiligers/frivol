@@ -390,7 +390,7 @@ class TestFrivol < Test::Unit::TestCase
     end
 
     seed = SeedValueCounterTestClass.new
-    assert_equal seed.tedious_count - 1, seed.increment_cached_count
+    assert_equal seed.tedious_count - 1, seed.decrement_cached_count
   end
 
   should "use seed value for initial value of decrement_by" do
@@ -404,7 +404,7 @@ class TestFrivol < Test::Unit::TestCase
 
     seed = SeedValueCounterTestClass.new
     amount = 3
-    assert_equal seed.tedious_count - amount, seed.increment_cached_count_by(amount)
+    assert_equal seed.tedious_count - amount, seed.decrement_cached_count_by(amount)
   end
 
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
