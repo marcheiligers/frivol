@@ -259,25 +259,33 @@ module Frivol
       (Frivol::Config.redis[key] || default).to_i
     end
 
-    def self.increment_counter(instance, counter)
+    def self.increment_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
+      store_counter_seed_value(key, instance, counter, seed_callback)
       Frivol::Config.redis.incr(key)
     end
     
-    def self.increment_counter_by(instance, counter, amount)
+    def self.increment_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       Frivol::Config.redis.incrby(key, amount)
     end
 
-    def self.decrement_counter(instance, counter)
+    def self.decrement_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       Frivol::Config.redis.decr(key)
     end
     
-    def self.decrement_counter_by(instance, counter, amount)
+    def self.decrement_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       Frivol::Config.redis.decrby(key, amount)
     end
+
+    def self.store_counter_seed_value(key, instance, counter, seed_callback)
+      unless Frivol::Config.redis.exists(key) || seed_callback.nil?
+        store_counter( instance, counter, seed_callback.call(instance))
+      end
+    end
+    private_class_method :store_counter_seed_value
   end
   
   # == Frivol::ClassMethods
@@ -319,7 +327,9 @@ module Frivol
     def storage_bucket(bucket, options = {})
       time = options[:expires_in]
       storage_expires_in(time, bucket) if !time.nil?
-      is_counter = options[:counter]
+
+      is_counter    = options[:counter]
+      seed_callback = options[:seed]
       
       self.class_eval do
         if is_counter
@@ -332,19 +342,19 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            Frivol::Helpers.increment_counter(self, bucket)
+            Frivol::Helpers.increment_counter(self, bucket, seed_callback)
           end
 
           define_method "increment_#{bucket}_by" do |amount|
-            Frivol::Helpers.increment_counter_by(self, bucket, amount)
+            Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
           end
 
           define_method "decrement_#{bucket}" do
-            Frivol::Helpers.decrement_counter(self, bucket)
+            Frivol::Helpers.decrement_counter(self, bucket, seed_callback)
           end
 
           define_method "decrement_#{bucket}_by" do |amount|
-            Frivol::Helpers.decrement_counter_by(self, bucket, amount)
+            Frivol::Helpers.decrement_counter_by(self, bucket, amount, seed_callback)
           end
         else
           define_method "store_#{bucket}" do |keys_and_values|
