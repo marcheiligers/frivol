@@ -400,15 +400,22 @@ module Frivol
       # If :counter and no :bucket is provided the :bucket is set to the
       # :bucket is set to the method_name (and so the :expires_in will be used).
       def frivolize(method_name, options = {})
-        bucket = options[:bucket]
-        time = options[:expires_in]
-        is_counter = options[:counter]
+        bucket        = options[:bucket]
+        time          = options[:expires_in]
+        is_counter    = options[:counter]
+        seed_callback = options[:seed]
+
         bucket = method_name if bucket.nil? && is_counter
         frivolized_method_name = "frivolized_#{method_name}"
         
         self.class_eval do
           alias_method frivolized_method_name, method_name
-          storage_bucket(bucket, { :expires_in => time, :counter => is_counter }) unless bucket.nil?
+          unless bucket.nil?
+            storage_bucket(bucket, { 
+              :expires_in => time, 
+              :counter    => is_counter, 
+              :seed       => seed_callback })
+          end
 
           if is_counter
             define_method method_name do
