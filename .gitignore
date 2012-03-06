@@ -1,6 +1,9 @@
 ## MAC OS
 .DS_Store
 
+## RVM
+.rvmrc
+
 ## TEXTMATE
 *.tmproj
 tmtags
