@@ -353,6 +353,20 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 0, k.peek_in_grave  
   end
 
+  should "use seed value for initial value of increment" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+
+    assert_equal seed.tedious_count + 1, seed.increment_cached_count
+  end
+
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
   should "have thread safe counters" do
     class ThreadCounterTestClass < TestClass
