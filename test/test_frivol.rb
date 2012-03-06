@@ -545,5 +545,17 @@ class TestFrivol < Test::Unit::TestCase
     t = FrivolizeExpiringBucketTestClass.new # another fresh instance after value expired
     assert_equal 10, t.dinosaur_count
   end
+
+  should "frivolize with seed as a counter for increment" do
+    class FrivolizeSeedTestClass < TestClass
+      def bak_baks
+        88_888
+      end
+      frivolize :bak_baks, :counter => true, :seed => Proc.new{ |obj| obj.bak_baks}
+    end
+
+    f = FrivolizeSeedTestClass.new
+    assert_equal 88_888 + 1, f.increment_bak_baks
+  end
   
 end
