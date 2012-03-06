@@ -363,8 +363,48 @@ class TestFrivol < Test::Unit::TestCase
     end
 
     seed = SeedValueCounterTestClass.new
-
     assert_equal seed.tedious_count + 1, seed.increment_cached_count
+  end
+
+  should "use seed value for initial value of increment_by" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed   = SeedValueCounterTestClass.new
+    amount = 2
+    assert_equal seed.tedious_count + amount, seed.increment_cached_count_by(amount)
+  end
+  
+  should "use seed value for initial value of decrement" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+    assert_equal seed.tedious_count - 1, seed.increment_cached_count
+  end
+
+  should "use seed value for initial value of decrement_by" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+    amount = 3
+    assert_equal seed.tedious_count - amount, seed.increment_cached_count_by(amount)
   end
 
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
