@@ -267,16 +267,19 @@ module Frivol
     
     def self.increment_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
+      store_counter_seed_value(key, instance, counter, seed_callback)
       Frivol::Config.redis.incrby(key, amount)
     end
 
     def self.decrement_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
+      store_counter_seed_value(key, instance, counter, seed_callback)
       Frivol::Config.redis.decr(key)
     end
     
     def self.decrement_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
+      store_counter_seed_value(key, instance, counter, seed_callback)
       Frivol::Config.redis.decrby(key, amount)
     end
 
