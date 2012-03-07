@@ -353,6 +353,60 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal 0, k.peek_in_grave  
   end
 
+  should "use seed value for initial value of increment" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+    assert_equal seed.tedious_count + 1, seed.increment_cached_count
+  end
+
+  should "use seed value for initial value of increment_by" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed   = SeedValueCounterTestClass.new
+    amount = 2
+    assert_equal seed.tedious_count + amount, seed.increment_cached_count_by(amount)
+  end
+  
+  should "use seed value for initial value of decrement" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+    assert_equal seed.tedious_count - 1, seed.decrement_cached_count
+  end
+
+  should "use seed value for initial value of decrement_by" do
+    class SeedValueCounterTestClass < TestClass
+      storage_bucket :cached_count, :counter => true, :seed => Proc.new{ |obj| obj.tedious_count }
+
+      def tedious_count
+        99_999 # ... bottle of beers on the wall        
+      end
+    end
+
+    seed = SeedValueCounterTestClass.new
+    amount = 3
+    assert_equal seed.tedious_count - amount, seed.decrement_cached_count_by(amount)
+  end
+
   # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
   should "have thread safe counters" do
     class ThreadCounterTestClass < TestClass
@@ -490,6 +544,18 @@ class TestFrivol < Test::Unit::TestCase
   
     t = FrivolizeExpiringBucketTestClass.new # another fresh instance after value expired
     assert_equal 10, t.dinosaur_count
+  end
+
+  should "frivolize with seed as a counter for increment" do
+    class FrivolizeSeedTestClass < TestClass
+      def bak_baks
+        88_888
+      end
+      frivolize :bak_baks, :counter => true, :seed => Proc.new{ |obj| obj.bak_baks}
+    end
+
+    f = FrivolizeSeedTestClass.new
+    assert_equal 88_888 + 1, f.increment_bak_baks
   end
   
 end
