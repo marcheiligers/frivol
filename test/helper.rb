@@ -13,7 +13,7 @@ class Test::Unit::TestCase
   end
   
   def ruby_one_eight?
-    @ruby_one_eight || `ruby -v`[0, 8] == 'ruby 1.8'
+    @ruby_one_eight || `ruby -v`.include?('1.8')
   end
 end
 
