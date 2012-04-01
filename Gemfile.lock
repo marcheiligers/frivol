@@ -8,6 +8,9 @@ GEM
       rake
       rdoc
     json (1.6.5)
+    metaclass (0.0.1)
+    mocha (0.10.5)
+      metaclass (~> 0.0.1)
     rake (0.8.7)
     rdoc (3.12)
       json (~> 1.4)
@@ -24,5 +27,6 @@ PLATFORMS
 DEPENDENCIES
   jeweler
   json
+  mocha
   redis
   shoulda

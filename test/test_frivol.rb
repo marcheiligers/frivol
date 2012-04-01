@@ -41,7 +41,11 @@ class TestFrivol < Test::Unit::TestCase
     
     t = MultiTestClass.new
     t.save
-    assert_equal [ 1, 2 ], t.load
+    
+    # Ruby 1.8 may fail this because hash keys do not guarantee order
+    # assert_equal [ 1, 2 ], t.load
+    r = t.load
+    assert r == [ 1, 2 ] || r == [ 2, 1 ] # yuck! TODO: Figure a way to make this test check for Ruby 1.9 and do it properly
   end
   
   should "get defaults from instance methods if defined" do
