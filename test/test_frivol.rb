@@ -414,8 +414,10 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal seed.tedious_count - amount, seed.decrement_cached_count_by(amount)
   end
 
-  # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
   should "have thread safe counters" do
+    # Note: this test will fail from time to time using fake_redis because fake_redis is not thread safe
+    return if defined? FAKE_REDIS
+    
     class ThreadCounterTestClass < TestClass
       storage_bucket :blue, :counter => true
       

@@ -1,3 +1,5 @@
+FAKE_REDIS = true
+
 class Redis
   def initialize(config)
     @storage = {}
