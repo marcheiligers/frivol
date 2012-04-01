@@ -2,7 +2,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestFrivol < Test::Unit::TestCase
   def setup 
-    # fake_redis # Comment out this line to test against a real live Redis
+    fake_redis # Comment out this line to test against a real live Redis
     Frivol::Config.redis_config = { :thread_safe => true } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
     Frivol::Config.redis.flushdb
   end

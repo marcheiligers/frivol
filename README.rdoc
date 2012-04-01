@@ -67,6 +67,10 @@ data in Redis.
 Since version 0.2.0, Frivol supports buckets which each get their own storage in Redis and can have their own
 expiry time. A special counter bucket stores only integer values and also has increment and decrement methods.
 
+== Contributors
+
+* Chris Spring (@autonomous)
+
 == Note on Patches/Pull Requests
  
 * Fork the project.
