@@ -42,10 +42,13 @@ class TestFrivol < Test::Unit::TestCase
     t = MultiTestClass.new
     t.save
     
-    # Ruby 1.8 may fail this because hash keys do not guarantee order
-    # assert_equal [ 1, 2 ], t.load
-    r = t.load
-    assert r == [ 1, 2 ] || r == [ 2, 1 ] # yuck! TODO: Figure a way to make this test check for Ruby 1.9 and do it properly
+    if ruby_one_eight?
+      r = t.load
+      assert r == [ 1, 2 ] || r == [ 2, 1 ] # yuck!
+    else
+      # Ruby 1.8 may fail this because hash keys do not guarantee order
+      assert_equal [ 1, 2 ], t.load
+    end
   end
   
   should "get defaults from instance methods if defined" do
@@ -495,8 +498,8 @@ class TestFrivol < Test::Unit::TestCase
     Frivol::Config.redis.expects(:[]).twice.returns(nil, { :dinosaur_count => 10 }.to_json)
 
     t = FrivolizeTestClass.new
-    assert t.methods.include? "dinosaur_count"
-    assert t.methods.include? "frivolized_dinosaur_count"
+    assert t.methods.include?(ruby_one_eight? ? 'dinosaur_count' : :dinosaur_count)
+    assert t.methods.include?(ruby_one_eight? ? 'frivolized_dinosaur_count' : :frivolized_dinosaur_count)
     
     assert_equal 10, t.dinosaur_count
     
@@ -537,7 +540,7 @@ class TestFrivol < Test::Unit::TestCase
     Frivol::Config.redis.expects(:[]).times(3).returns(nil, 10, nil)
 
     t = FrivolizeExpiringBucketTestClass.new
-    assert t.methods.include? "store_dinosaur_count" # check that the bucket name is the method name
+    assert t.methods.include?(ruby_one_eight? ? 'store_dinosaur_count' : :store_dinosaur_count) # check that the bucket name is the method name
 
     assert_equal 10, t.dinosaur_count
   

@@ -11,6 +11,10 @@ class Test::Unit::TestCase
   def fake_redis
     require 'fake_redis'
   end
+  
+  def ruby_one_eight?
+    @ruby_one_eight || `ruby -v`[0, 8] == 'ruby 1.8'
+  end
 end
 
 class TestClass
