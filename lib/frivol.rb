@@ -284,7 +284,7 @@ module Frivol
     end
 
     def self.store_counter_seed_value(key, instance, counter, seed_callback)
-      unless Frivol::Config.redis.exists(key) || seed_callback.nil?
+      unless seed_callback.nil? || Frivol::Config.redis.exists(key)
         store_counter( instance, counter, seed_callback.call(instance))
       end
     end
