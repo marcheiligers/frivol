@@ -3,6 +3,7 @@
 
 ## RVM
 .rvmrc
+.ruby-*
 
 ## TEXTMATE
 *.tmproj
