@@ -23,12 +23,12 @@ class Redis
     @storage.delete key
     @expires.delete key
   end
-  
+
   def incr(key)
     # puts "incr #{key}"
     @storage[key] += 1
   end
-  
+
   def incrby(key, amount)
     # puts "incr #{key}"
     @storage[key] += amount
@@ -38,7 +38,7 @@ class Redis
     # puts "decr #{key}"
     @storage[key] -= 1
   end
-  
+
   def decrby(key, amount)
     # puts "decr #{key}"
     @storage[key] -= amount
@@ -46,37 +46,41 @@ class Redis
 
   def expire(key, time)
     begin
-      t = Integer(time) 
-    rescue 
+      t = Integer(time)
+    rescue
       raise RuntimeError.new("-ERR value is not an integer")
     end
     @expires[key] = Time.now + t
   end
-  
+
   def exists(key)
     @storage.key? key
   end
-  
+
   def ttl(key)
     # puts "ttl #{key}"
     return -1 if @expires[key].nil? || @expires[key] < Time.now
     (@expires[key] - Time.now).to_i
   end
-  
+
   def multi(&block)
     yield(self)
   end
-  
+
   def flushdb
     @storage = {}
   end
-  
+
   # Help with debugging
   def inspect
-    @storage.keys.sort.map do |key| 
+    @storage.keys.sort.map do |key|
       result = "\n#{key} => #{@storage[key].inspect}"
       result << "\n\texpires at #{@expires[key]}" if @expires.key?(key)
       result
     end
+  end
+
+  def method_missing(meth, *args, &block)
+    puts "Missing method: #{meth} called with #{args.inspect}"
   end
 end

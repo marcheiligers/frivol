@@ -12,12 +12,13 @@ module Frivol
     #   }
     #   Frivol::Config.redis_config = REDIS_CONFIG
     def self.redis_config=(config)
-      @@redis = Redis.new(config)
+      @@config = config
+      Thread.current[:frivol_redis] = nil
     end
 
     # Returns the configured Redis instance
     def self.redis
-      @@redis
+      Thread.current[:frivol_redis] ||= Redis.new(@@config)
     end
 
     # A convenience method to include Frivol in a class, with an optional storage expiry parameter.
