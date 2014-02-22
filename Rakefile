@@ -42,15 +42,14 @@ task :default => :test
 
 begin
   require 'rdoc/task'
+  Rake::RDocTask.new do |rdoc|
+    version = File.exist?('VERSION') ? File.read('VERSION') : ""
+
+    rdoc.rdoc_dir = 'rdoc'
+    rdoc.title = "frivol #{version}"
+    rdoc.rdoc_files.include('README*')
+    rdoc.rdoc_files.include('lib/**/*.rb')
+  end
 rescue LoadError
-  require 'rake/rdoctask'
-end
-
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "frivol #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+  puts "RDocTask (or a dependency) not available. Maybe older Ruby?"
 end
