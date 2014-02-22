@@ -3,7 +3,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 class TestFrivol < Test::Unit::TestCase
   def test_frivolize_methods
     klass = Class.new(TestClass) do
-      @@count = 0
+      class_variable_set :@@count, 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
       def dinosaur_count
@@ -28,7 +28,7 @@ class TestFrivol < Test::Unit::TestCase
 
   def test_frivolize_methods_with_expiry_in_a_bucket
     klass = Class.new(TestClass) do
-      @@count = 0
+      class_variable_set :@@count, 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
       def dinosaur_count
@@ -47,7 +47,7 @@ class TestFrivol < Test::Unit::TestCase
 
   def test_frivolize_methods_with_expiry_as_a_counter
     klass = Class.new(TestClass) do
-      @@count = 0
+      class_variable_set :@@count, 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
       def dinosaur_count
