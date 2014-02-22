@@ -50,7 +50,7 @@ begin
     rdoc.rdoc_files.include('README*')
     rdoc.rdoc_files.include('lib/**/*.rb')
   end
-rescue => e
+rescue LoadError, RuntimeError => e
   if e.is_a?(LoadError) || (e.is_a?(RuntimeError) && e.message.start_with?("ERROR: 'rake/rdoctask'"))
     puts "RDocTask (or a dependency) not available. Maybe older Ruby?"
   else
