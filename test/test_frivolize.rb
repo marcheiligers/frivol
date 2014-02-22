@@ -3,6 +3,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 class TestFrivol < Test::Unit::TestCase
   def test_frivolize_methods
     klass = Class.new(TestClass) do
+      class_variable_set :@@count, 0 # Ruby 1.9.2 seems to need this
       @@count = 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
@@ -11,7 +12,6 @@ class TestFrivol < Test::Unit::TestCase
       end
       frivolize :dinosaur_count
     end
-    klass.class_variable_set :@@count, 0
 
     t = klass.new
     assert t.methods.include?(ruby_one_eight? ? 'dinosaur_count' : :dinosaur_count)
@@ -29,6 +29,7 @@ class TestFrivol < Test::Unit::TestCase
 
   def test_frivolize_methods_with_expiry_in_a_bucket
     klass = Class.new(TestClass) do
+      class_variable_set :@@count, 0 # Ruby 1.9.2 seems to need this
       @@count = 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
@@ -37,7 +38,6 @@ class TestFrivol < Test::Unit::TestCase
       end
       frivolize :dinosaur_count, { :bucket => :dinosaurs, :expires_in => -1 }
     end
-    klass.class_variable_set :@@count, 0
 
     t = klass.new
     assert_equal 1, t.dinosaur_count
@@ -49,6 +49,7 @@ class TestFrivol < Test::Unit::TestCase
 
   def test_frivolize_methods_with_expiry_as_a_counter
     klass = Class.new(TestClass) do
+      class_variable_set :@@count, 0 # Ruby 1.9.2 seems to need this
       @@count = 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
@@ -57,7 +58,6 @@ class TestFrivol < Test::Unit::TestCase
       end
       frivolize :dinosaur_count, { :expires_in => -1, :counter => true }
     end
-    klass.class_variable_set :@@count, 0
 
     t = klass.new
     assert t.methods.include?(ruby_one_eight? ? 'store_dinosaur_count' : :store_dinosaur_count) # check that the bucket name is the method name
