@@ -12,7 +12,6 @@ begin
     gem.authors = ["Marc Heiligers"]
     gem.add_dependency "json", ">= 1.2.0"
     gem.add_dependency "redis", ">= 2.0.10"
-    gem.add_development_dependency "shoulda", ">= 2.11.1"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
@@ -41,7 +40,12 @@ end
 
 task :default => :test
 
-require 'rdoc/task'
+begin
+  require 'rdoc/task'
+rescue LoadError
+  require 'rake/rdoctask'
+end
+
 Rake::RDocTask.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
