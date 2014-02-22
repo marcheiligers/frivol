@@ -38,7 +38,7 @@ class TestFrivol < Test::Unit::TestCase
     end.new
 
     result = t.retrieve :value => nil, :value2 => :value2_default
-    assert_equal [ "", "value2" ], result.map(&:to_s)
+    assert_equal [ "", "value2" ], result.map(&:to_s).sort
   end
 
   def test_not_be_naughty_and_try_to_respond_to_nil_default
