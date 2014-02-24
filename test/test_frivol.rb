@@ -122,6 +122,28 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal Time.local(2010, 8, 20), t.load
   end
 
+  should "retain Times with zones" do
+    class TimeZoneTestClass < TestClass
+      require 'active_support'
+      require 'active_support/time_with_zone'
+      require 'active_support/core_ext/time'
+
+      Time.zone = 'Eastern Time (US & Canada)'
+
+      def save
+        store :t => Time.zone.local(2010, 8, 20)
+      end
+
+      def load
+        retrieve :t => nil
+      end
+    end
+
+    t = TimeZoneTestClass.new
+    t.save
+    assert_equal Time.zone.local(2010, 8, 20), t.load
+  end
+
   should "expire storage the everytime time it's stored" do
     class ExpiryTestClass < TestClass
       storage_expires_in 60
