@@ -1,7 +1,13 @@
 source 'https://rubygems.org'
 
-gem 'jeweler'
 gem 'json'
 gem 'redis'
-gem 'shoulda'
-gem 'mocha'
+gem 'rake'
+
+group :development do
+  gem 'jeweler'
+end
+
+group :test do
+  gem 'test-unit'
+end
