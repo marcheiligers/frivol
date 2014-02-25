@@ -39,17 +39,13 @@ module Frivol
       time = options[:expires_in]
       storage_expires_in(time, bucket) if !time.nil?
 
-      is_counter    = !!options[:counter]
+      is_counter    = options[:counter]
       seed_callback = options[:seed]
 
-      if is_counter && options[:counter].is_a?(Hash)
-        if_condition = options[:counter][:if]
-        unless if_condition.respond_to?(:call)
-          tmp = if_condition
-          if_condition = proc{ tmp }
-        end
+      if_condition = options[:if] || proc{ true }
+      if if_condition.respond_to?(:call)
+        define_method '_if_callback', &if_condition
       end
-      if_condition = proc{ true } if if_condition.nil?
 
       self.class_eval do
         if is_counter
@@ -62,7 +58,7 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            Frivol::Helpers.increment_counter(self, bucket, seed_callback) if if_condition.call
+            Frivol::Helpers.increment_counter(self, bucket, seed_callback) if _if_callback
           end
 
           define_method "increment_#{bucket}_by" do |amount|
