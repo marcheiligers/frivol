@@ -87,6 +87,7 @@ require "redis"
 # == Frivol
 module Frivol
   require "frivol/config"
+  require "frivol/callback"
   require "frivol/helpers"
   require "frivol/class_methods"
 

@@ -75,6 +75,7 @@ module Frivol
     end
 
     def self.increment_counter(instance, counter, seed_callback=nil)
+      return unless instance.send(:__if_callback)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
       Frivol::Config.redis.incr(key)

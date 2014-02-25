@@ -42,10 +42,8 @@ module Frivol
       is_counter    = options[:counter]
       seed_callback = options[:seed]
 
-      if_condition = options[:if] || proc{ true }
-      if if_condition.respond_to?(:call)
-        define_method '_if_callback', &if_condition
-      end
+
+      Callback.new(self, options[:if], true).compile('__if_callback')
 
       self.class_eval do
         if is_counter
@@ -58,7 +56,7 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            Frivol::Helpers.increment_counter(self, bucket, seed_callback) if _if_callback
+            Frivol::Helpers.increment_counter(self, bucket, seed_callback)
           end
 
           define_method "increment_#{bucket}_by" do |amount|
