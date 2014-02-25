@@ -44,10 +44,12 @@ module Frivol
 
       if is_counter && options[:counter].is_a?(Hash)
         if_condition = options[:counter][:if]
-        if_condition = proc{ if_condition } unless if_condition.respond_to?(:call)
+        unless if_condition.respond_to?(:call)
+          tmp = if_condition
+          if_condition = proc{ tmp }
+        end
       end
-      if_condition ||= proc{ true }
-
+      if_condition = proc{ true } if if_condition.nil?
 
       self.class_eval do
         if is_counter
@@ -60,7 +62,7 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            Frivol::Helpers.increment_counter(self, bucket, seed_callback)  if if_condition.call
+            Frivol::Helpers.increment_counter(self, bucket, seed_callback) if if_condition.call
           end
 
           define_method "increment_#{bucket}_by" do |amount|
