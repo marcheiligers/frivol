@@ -8,13 +8,14 @@ class TestIfCounters < Test::Unit::TestCase
   end
 
   def test_increments_a_counter_if_IF_method_evaluates_to_true
-    t = Class.new(TestClass) do
+    klass = Class.new(TestClass) do
       storage_bucket :stars, :counter => true, :if => :something_truthy
 
       def something_truthy
         'Wax museum'
       end
-    end.new
+    end
+    t = klass.new
 
     t.increment_stars
     assert_equal 1, t.retrieve_stars(0)
@@ -27,13 +28,14 @@ class TestIfCounters < Test::Unit::TestCase
   end
 
   def test_increments_a_counter_with_positive_if_condition_proc_which_takes_an_instance
-    t = Class.new(TestClass) do
+    klass = Class.new(TestClass) do
       storage_bucket :stars, :counter => true, :if => Proc.new{ |o| o.something_truthy }
 
       def something_truthy
         'Wax museum'
       end
-    end.new
+    end
+    t = klass.new
 
     t.increment_stars
     assert_equal 1, t.retrieve_stars(0)

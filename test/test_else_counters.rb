@@ -23,13 +23,14 @@ class TestElseCounters < Test::Unit::TestCase
   end
 
   def test_given_IF_evaluates_to_false_ELSE_calls_a_method_on_the_object
-    t = Class.new(TestClass) do
+    klass = Class.new(TestClass) do
       storage_bucket :stars, :counter => true, :if => Proc.new{false}, :else => :set_stars_to_20
 
       def set_stars_to_20
         store_stars 20
       end
-    end.new
+    end
+    t = klass.new
 
     t.increment_stars
 
