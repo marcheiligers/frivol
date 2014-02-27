@@ -43,8 +43,8 @@ module Frivol
       seed_callback = options[:seed]
 
 
-      if_method   = Functor.new(self, options[:if], true).compile_into_method('__if')
-      else_method = Functor.new(self, options[:else]).compile_into_method('__else')
+      condition_block   = Functor.new(self, options[:condition], true).compile
+      otherwise_block = Functor.new(self, options[:otherwise]).compile
 
       self.class_eval do
         if is_counter
@@ -57,10 +57,10 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            if instance_eval(if_method)
+            if instance_exec(&condition_block)
               Frivol::Helpers.increment_counter(self, bucket, seed_callback)
             else
-              instance_eval(else_method)
+              instance_exec(&otherwise_block)
             end
           end
 
