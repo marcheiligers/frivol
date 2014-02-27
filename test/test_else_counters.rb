@@ -3,7 +3,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 class TestElseCounters < Test::Unit::TestCase
   def test_given_IF_evaluates_to_true_ELSE_is_not_performed
     else_proc = Proc.new{raise StandardError.new('You\'ll never catch me!') }
-    t = Class.new(TestClass) { storage_bucket :stars, :counter => true, :condition => Proc.new{true}, :otherwise => else_proc }.new
+    t = Class.new(TestClass) { storage_bucket :stars, :counter => true, :condition => Proc.new{true}, :else => else_proc }.new
 
     assert_nothing_raised do
       t.increment_stars
@@ -13,7 +13,7 @@ class TestElseCounters < Test::Unit::TestCase
 
   def test_given_IF_evaluates_to_false_ELSE_is_performed
     else_proc = Proc.new{raise StandardError.new('You\'ll never catch me!') }
-    t = Class.new(TestClass) { storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :otherwise => else_proc }.new
+    t = Class.new(TestClass) { storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :else => else_proc }.new
 
     assert_raises StandardError do
       t.increment_stars
@@ -24,7 +24,7 @@ class TestElseCounters < Test::Unit::TestCase
 
   def test_given_IF_evaluates_to_false_ELSE_calls_a_method_on_the_object
     klass = Class.new(TestClass) do
-      storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :otherwise => :set_stars_to_20
+      storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :else => :set_stars_to_20
 
       def set_stars_to_20
         store_stars 20

@@ -44,7 +44,7 @@ module Frivol
 
 
       condition_block   = Functor.new(self, options[:condition], true).compile
-      otherwise_block = Functor.new(self, options[:otherwise]).compile
+      else_block = Functor.new(self, options[:else]).compile
 
       self.class_eval do
         if is_counter
@@ -60,7 +60,7 @@ module Frivol
             if instance_exec(&condition_block)
               Frivol::Helpers.increment_counter(self, bucket, seed_callback)
             else
-              instance_exec(&otherwise_block)
+              instance_exec(&else_block)
             end
           end
 
