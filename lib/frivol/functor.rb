@@ -7,17 +7,21 @@ module Frivol
     end
 
     def compile_into_method(method_name)
+      args = ''
       proc = case @method
       when Proc
+        args = '(self)' if @method.arity == 1
         @method
       when Symbol
         method = @method
-        instance_proc = proc{ self.send(method) }
+        proc{ self.send(method) }
       else
         default_return = @default
-        default_proc = proc{ default_return }
+        proc{ default_return }
       end
+
       @klass.send(:define_method, method_name, &proc)
+      "#{method_name}#{args}"
     end
   end
 end
