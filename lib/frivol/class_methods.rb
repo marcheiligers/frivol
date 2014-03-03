@@ -46,15 +46,15 @@ module Frivol
       condition_block = Functor.new(self, options[:condition], true).compile
       else_block      = Functor.new(self, options[:else]).compile
 
-      self.class_eval do
-        define_method 'condition_evaluation' do |&block|
-          if instance_exec(&condition_block)
-            block.call
-          else
-            instance_exec(&else_block)
-          end
+      define_method :condition_evaluation do |*args, &block|
+        if instance_exec(*args, &condition_block)
+          block.call
+        else
+          instance_exec(*args, &else_block)
         end
+      end
 
+      self.class_eval do
         if is_counter
           define_method "store_#{bucket}" do |value|
             Frivol::Helpers.store_counter(self, bucket, value)
@@ -65,7 +65,7 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            condition_evaluation do
+            condition_evaluation("increment_#{bucket}") do
               Frivol::Helpers.increment_counter(self, bucket, seed_callback)
             end
           end
@@ -83,7 +83,7 @@ module Frivol
           end
         else
           define_method "store_#{bucket}" do |keys_and_values|
-            condition_evaluation do
+            condition_evaluation("store_#{bucket}", keys_and_values) do
               hash = Frivol::Helpers.retrieve_hash(self, bucket)
               keys_and_values.each do |key, value|
                 hash[key.to_s] = value
@@ -93,7 +93,11 @@ module Frivol
           end
 
           define_method "retrieve_#{bucket}" do |keys_and_defaults|
-            hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            hash = {}
+            condition_evaluation("store_#{bucket}", keys_and_defaults) do
+              hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            end
+
             result = keys_and_defaults.map do |key, default|
               hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
             end
@@ -103,11 +107,15 @@ module Frivol
         end
 
         define_method "delete_#{bucket}" do
-          Frivol::Helpers.delete_hash(self, bucket)
+          condition_evaluation("delete_#{bucket}") do
+            Frivol::Helpers.delete_hash(self, bucket)
+          end
         end
 
         define_method "clear_#{bucket}" do
-          Frivol::Helpers.clear_hash(self, bucket)
+          condition_evaluation("clear_#{bucket}") do
+            Frivol::Helpers.clear_hash(self, bucket)
+          end
         end
       end
 

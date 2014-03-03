@@ -5,7 +5,7 @@ class TestCondition < Test::Unit::TestCase
     klass = Class.new(TestClass) do
       storage_bucket :stars, :condition => :something_truthy
 
-      def something_truthy
+      def something_truthy(frivol_method, *args)
         'Wax museum'
       end
     end

@@ -26,7 +26,7 @@ class TestElseWithCounters < Test::Unit::TestCase
     klass = Class.new(TestClass) do
       storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :else => :set_stars_to_20
 
-      def set_stars_to_20
+      def set_stars_to_20(frivol_method, *args)
         store_stars 20
       end
     end
