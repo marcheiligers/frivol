@@ -63,7 +63,11 @@ module Frivol
           end
 
           define_method "retrieve_#{bucket}" do |default|
-            Frivol::Helpers.retrieve_counter(self, bucket, default)
+            return_value = default
+            condition_evaluation("store_#{bucket}", default) do
+              return_value = Frivol::Helpers.retrieve_counter(self, bucket, default)
+            end
+            return_value
           end
 
           define_method "increment_#{bucket}" do

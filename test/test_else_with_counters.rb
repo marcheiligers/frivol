@@ -12,7 +12,7 @@ class TestElseWithCounters < Test::Unit::TestCase
   end
 
   def test_given_CONDITION_evaluates_to_false_ELSE_is_performed
-    else_proc = Proc.new{raise StandardError.new('You\'ll never catch me!') }
+    else_proc = Proc.new{ |instance, method_name, *args| raise StandardError.new('You\'ll never catch me!') if method_name == 'increment_stars' }
     t = Class.new(TestClass) { storage_bucket :stars, :counter => true, :condition => Proc.new{false}, :else => else_proc }.new
 
     assert_raises StandardError do
