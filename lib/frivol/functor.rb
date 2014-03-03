@@ -10,13 +10,14 @@ module Frivol
       case @method
       when Proc
         method = @method
-        proc do |frivol_method, *frivol_args|
-          method.call(self, frivol_method, *frivol_args)
+        proc do |*frivol_args|
+          frivol_args.unshift(self)
+          method.call(*frivol_args)
         end
       when Symbol
         method = @method
-        proc do |frivol_method, *frivol_args|
-          self.send(method, frivol_method, *frivol_args)
+        proc do |*frivol_args|
+          self.send(method, *frivol_args)
         end
       else
         default_return = @default

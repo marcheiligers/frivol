@@ -5,7 +5,7 @@ class TestCondition < Test::Unit::TestCase
     klass = Class.new(TestClass) do
       storage_bucket :stars, :condition => :something_truthy
 
-      def something_truthy(frivol_method, *args)
+      def something_truthy(*args)
         'Wax museum'
       end
     end
@@ -23,9 +23,9 @@ class TestCondition < Test::Unit::TestCase
 
   def test_stores_positive_CONDITION_proc_which_takes_an_instance
     klass = Class.new(TestClass) do
-      storage_bucket :stars, :condition => Proc.new{ |o| o.something_truthy }
+      storage_bucket :stars, :condition => Proc.new{ |instance, frivol_method, *args| instance.something_truthy }
 
-      def something_truthy
+      def something_truthy(*args)
         'Wax museum'
       end
     end
