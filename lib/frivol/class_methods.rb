@@ -71,7 +71,9 @@ module Frivol
           end
 
           define_method "increment_#{bucket}_by" do |amount|
-            Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
+            condition_evaluation("store_#{bucket}", amount) do
+              Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
+            end
           end
 
           define_method "decrement_#{bucket}" do

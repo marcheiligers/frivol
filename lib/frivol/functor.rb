@@ -19,6 +19,8 @@ module Frivol
         proc do |*frivol_args|
           self.send(method, *frivol_args)
         end
+      when FalseClass
+        proc{ false }
       else
         default_return = @default
         proc{ default_return }
