@@ -43,10 +43,18 @@ module Frivol
       seed_callback = options[:seed]
 
 
-      condition_block   = Functor.new(self, options[:condition], true).compile
-      else_block = Functor.new(self, options[:else]).compile
+      condition_block = Functor.new(self, options[:condition], true).compile
+      else_block      = Functor.new(self, options[:else]).compile
 
       self.class_eval do
+        define_method 'condition_evaluation' do |&block|
+          if instance_exec(&condition_block)
+            block.call
+          else
+            instance_exec(&else_block)
+          end
+        end
+
         if is_counter
           define_method "store_#{bucket}" do |value|
             Frivol::Helpers.store_counter(self, bucket, value)
@@ -57,10 +65,8 @@ module Frivol
           end
 
           define_method "increment_#{bucket}" do
-            if instance_exec(&condition_block)
+            condition_evaluation do
               Frivol::Helpers.increment_counter(self, bucket, seed_callback)
-            else
-              instance_exec(&else_block)
             end
           end
 
@@ -77,11 +83,13 @@ module Frivol
           end
         else
           define_method "store_#{bucket}" do |keys_and_values|
-            hash = Frivol::Helpers.retrieve_hash(self, bucket)
-            keys_and_values.each do |key, value|
-              hash[key.to_s] = value
+            condition_evaluation do
+              hash = Frivol::Helpers.retrieve_hash(self, bucket)
+              keys_and_values.each do |key, value|
+                hash[key.to_s] = value
+              end
+              Frivol::Helpers.store_hash(self, hash, bucket)
             end
-            Frivol::Helpers.store_hash(self, hash, bucket)
           end
 
           define_method "retrieve_#{bucket}" do |keys_and_defaults|
