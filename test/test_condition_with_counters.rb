@@ -29,7 +29,7 @@ class TestIfCounters < Test::Unit::TestCase
 
   def test_increments_a_counter_with_positive_if_condition_proc_which_takes_an_instance
     klass = Class.new(TestClass) do
-      storage_bucket :stars, :counter => true, :condition => Proc.new{ |o| o.something_truthy }
+      storage_bucket :stars, :counter => true, :condition => Proc.new{ |instance, frivol_method, *args| instance.something_truthy }
 
       def something_truthy
         'Wax museum'
