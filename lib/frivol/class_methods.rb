@@ -57,7 +57,9 @@ module Frivol
       self.class_eval do
         if is_counter
           define_method "store_#{bucket}" do |value|
-            Frivol::Helpers.store_counter(self, bucket, value)
+            condition_evaluation("store_#{bucket}", value) do
+              Frivol::Helpers.store_counter(self, bucket, value)
+            end
           end
 
           define_method "retrieve_#{bucket}" do |default|
@@ -71,7 +73,7 @@ module Frivol
           end
 
           define_method "increment_#{bucket}_by" do |amount|
-            condition_evaluation("store_#{bucket}", amount) do
+            condition_evaluation("increment_#{bucket}_by", amount) do
               Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
             end
           end

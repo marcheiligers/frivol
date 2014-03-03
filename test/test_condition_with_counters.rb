@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestIfCounters < Test::Unit::TestCase
+class TestConditionCounters < Test::Unit::TestCase
   def test_increments_a_counter_with_no_conditions
     t = Class.new(TestClass) { storage_bucket :stars, :counter => true }.new
     t.increment_stars
@@ -56,6 +56,12 @@ class TestIfCounters < Test::Unit::TestCase
   def test_increment_by_does_not_increment_with_condition_is_false
     t = Class.new(TestClass) { storage_bucket :stars,:counter => true, :condition => false }.new
     t.increment_stars_by(20)
+    assert_equal 0, t.retrieve_stars(0)
+  end
+
+  def test_store_does_not_set_the_value_if_condition_is_negative
+    t = Class.new(TestClass) { storage_bucket :stars,:counter => true, :condition => Proc.new{ false } }.new
+    t.store_stars(20)
     assert_equal 0, t.retrieve_stars(0)
   end
 end
