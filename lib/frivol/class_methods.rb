@@ -33,8 +33,11 @@ module Frivol
     # - as well as increment_#{bucket}_by(value) method which increments the counter by the value
     # - and similar decrement_#{bucket} and decrement_#{bucket}_by(value) methods
     #
-    # Options are :expires_in which sets the expiry time for a bucket,
-    # and :counter to create a special counter storage bucket.
+    # Options are
+    # - <tt>:expires_in</tt> which sets the expiry time for a bucket;
+    # - <tt>:counter</tt> to create a special counter storage bucket;
+    # - <tt>:condition</tt> that must be satisfied before an action is taken on a bucket;
+    # - <tt>:else</tt>, which is an action that is performed if <tt>:condition</tt> is not satisfied
     def storage_bucket(bucket, options = {})
       time = options[:expires_in]
       storage_expires_in(time, bucket) if !time.nil?
@@ -42,22 +45,44 @@ module Frivol
       is_counter    = options[:counter]
       seed_callback = options[:seed]
 
+
+      condition_block = Functor.new(options[:condition], true).compile
+      else_block      = Functor.new(options[:else]).compile
+
+      define_method :condition_evaluation do |*args, &block|
+        if instance_exec(*args, &condition_block)
+          block.call
+        else
+          instance_exec(*args, &else_block)
+        end
+      end
+
       self.class_eval do
         if is_counter
           define_method "store_#{bucket}" do |value|
-            Frivol::Helpers.store_counter(self, bucket, value)
+            condition_evaluation("store_#{bucket}", value) do
+              Frivol::Helpers.store_counter(self, bucket, value)
+            end
           end
 
           define_method "retrieve_#{bucket}" do |default|
-            Frivol::Helpers.retrieve_counter(self, bucket, default)
+            return_value = default
+            condition_evaluation("store_#{bucket}", default) do
+              return_value = Frivol::Helpers.retrieve_counter(self, bucket, default)
+            end
+            return_value
           end
 
           define_method "increment_#{bucket}" do
-            Frivol::Helpers.increment_counter(self, bucket, seed_callback)
+            condition_evaluation("increment_#{bucket}") do
+              Frivol::Helpers.increment_counter(self, bucket, seed_callback)
+            end
           end
 
           define_method "increment_#{bucket}_by" do |amount|
-            Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
+            condition_evaluation("increment_#{bucket}_by", amount) do
+              Frivol::Helpers.increment_counter_by(self, bucket, amount, seed_callback)
+            end
           end
 
           define_method "decrement_#{bucket}" do
@@ -69,15 +94,21 @@ module Frivol
           end
         else
           define_method "store_#{bucket}" do |keys_and_values|
-            hash = Frivol::Helpers.retrieve_hash(self, bucket)
-            keys_and_values.each do |key, value|
-              hash[key.to_s] = value
+            condition_evaluation("store_#{bucket}", keys_and_values) do
+              hash = Frivol::Helpers.retrieve_hash(self, bucket)
+              keys_and_values.each do |key, value|
+                hash[key.to_s] = value
+              end
+              Frivol::Helpers.store_hash(self, hash, bucket)
             end
-            Frivol::Helpers.store_hash(self, hash, bucket)
           end
 
           define_method "retrieve_#{bucket}" do |keys_and_defaults|
-            hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            hash = {}
+            condition_evaluation("store_#{bucket}", keys_and_defaults) do
+              hash = Frivol::Helpers.retrieve_hash(self, bucket)
+            end
+
             result = keys_and_defaults.map do |key, default|
               hash[key.to_s] || (default.is_a?(Symbol) && respond_to?(default) && send(default)) || default
             end
@@ -87,11 +118,15 @@ module Frivol
         end
 
         define_method "delete_#{bucket}" do
-          Frivol::Helpers.delete_hash(self, bucket)
+          condition_evaluation("delete_#{bucket}") do
+            Frivol::Helpers.delete_hash(self, bucket)
+          end
         end
 
         define_method "clear_#{bucket}" do
-          Frivol::Helpers.clear_hash(self, bucket)
+          condition_evaluation("clear_#{bucket}") do
+            Frivol::Helpers.clear_hash(self, bucket)
+          end
         end
       end
 

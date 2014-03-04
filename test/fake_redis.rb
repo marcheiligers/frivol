@@ -26,21 +26,25 @@ class Redis
 
   def incr(key)
     # puts "incr #{key}"
+    @storage[key] ||= 0
     @storage[key] += 1
   end
 
   def incrby(key, amount)
     # puts "incr #{key}"
+    @storage[key] ||= 0
     @storage[key] += amount
   end
 
   def decr(key)
     # puts "decr #{key}"
+    @storage[key] ||= 0
     @storage[key] -= 1
   end
 
   def decrby(key, amount)
     # puts "decr #{key}"
+    @storage[key] ||= 0
     @storage[key] -= amount
   end
 

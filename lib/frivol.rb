@@ -46,6 +46,27 @@
 #
 # These methods are thread safe if you pass <tt>:thread_safe => true</tt> to the Redis configuration.
 #
+# Fine grained control of storing and retrieving values from buckets can be controlled using the :condition and
+# :else options.
+#
+#   storage_bucket :my_bucket,
+#                  :condition => Proc.new{ |object, frivol_method, *args| ... },
+#                  :else       => :your_method
+#
+# For the above example, frivol execute the :condition proc and passes the instance of the current class, which
+# method is being attempted (increment, increment_by, store, retrieve, etc.) and any arguments that may have been
+# passed on to frivol.
+#
+# If the condition returns a truthy result, the frivol method is executed unimpeded, otherwise frivol moves on to
+# :else. :else for the above example is a method on the instance, and that method must be able to receive the frivol
+# method used (as a string) and any arguments passed to that method:
+#
+#   def your_method(frivol_method, *args)
+#     ...
+#   end
+#
+# The :condition and :else options can be specified as a proc, symbol, true or false.
+#
 # Frivol uses the +storage_key+ method to create a base key for storage in Redis. The current implementation uses
 # <tt>"#{self.class.name}-#{id}"</tt> so you'll want to override that method if you have classes that don't
 # respond to id.
@@ -87,6 +108,7 @@ require "redis"
 # == Frivol
 module Frivol
   require "frivol/config"
+  require "frivol/functor"
   require "frivol/helpers"
   require "frivol/class_methods"
 
