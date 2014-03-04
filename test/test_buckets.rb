@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestFrivol < Test::Unit::TestCase
+class TestBuckets < Test::Unit::TestCase
   def test_be_able_to_create_and_use_buckets
     t = Class.new(TestClass) { storage_bucket :blue }.new
 

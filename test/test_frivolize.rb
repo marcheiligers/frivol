@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestFrivol < Test::Unit::TestCase
+class TestFrivolize < Test::Unit::TestCase
   def test_frivolize_methods
     klass = Class.new(TestClass) do
       class_variable_set :@@count, 0 # Ruby 1.9.2 seems to need this

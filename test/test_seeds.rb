@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestFrivol < Test::Unit::TestCase
+class TestSeeds < Test::Unit::TestCase
   def test_use_seed_value_for_initial_value_of_increment
     t = Class.new(TestClass) do
       storage_bucket :cached_count, :counter => true, :seed => Proc.new { |obj| obj.tedious_count }
