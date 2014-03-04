@@ -7,10 +7,10 @@ require 'time'
 class Time
   # Serialize to JSON
   def to_json(*a)
-    {
+    MultiJson.dump(
       'json_class'   => self.class.name,
       'data'         => self.to_s
-    }.to_json(*a)
+    )
   end
 
   # Deserialize from JSON
@@ -27,10 +27,10 @@ begin
   class ActiveSupport::TimeWithZone
     # Serialize to JSON
     def to_json(*a)
-      {
+      MultiJson.dump(
         'json_class'   => self.class.name,
         'data'         => self.to_s
-      }.to_json(*a)
+      )
     end
 
     # Deserialize from JSON
