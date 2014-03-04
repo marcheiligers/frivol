@@ -58,10 +58,10 @@
 # passed on to frivol.
 #
 # If the condition returns a truthy result, the frivol method is executed unimpeded, otherwise frivol moves on to
-# :else. :else for the above example is a method on the instance, and that method must be able to handle the same
-# arguments the :condition proc take:
+# :else. :else for the above example is a method on the instance, and that method must be able to receive the frivol
+# method used (as a string) and any arguments passed to that method:
 #
-#   def your_method(object, frivol_method, *args)
+#   def your_method(frivol_method, *args)
 #     ...
 #   end
 #
