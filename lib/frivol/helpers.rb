@@ -1,10 +1,12 @@
 module Frivol
   module Helpers #:nodoc:
+    require 'multi_json'
+
     def self.store_hash(instance, hash, bucket = nil)
       data, is_new = get_data_and_is_new instance
       data[bucket.to_s] = hash
 
-      store_value instance, is_new[bucket.to_s], hash.to_json, bucket
+      store_value instance, is_new[bucket.to_s], MultiJson.dump(hash), bucket
 
       self.set_data_and_is_new instance, data, is_new
     end
@@ -32,7 +34,7 @@ module Frivol
 
       is_new[bucket.to_s] = json.nil?
 
-      hash = json.nil? ? {} : JSON.parse(json)
+      hash = json.nil? ? {} : MultiJson.load(json)
       data[bucket.to_s] = hash
 
       self.set_data_and_is_new instance, data, is_new
