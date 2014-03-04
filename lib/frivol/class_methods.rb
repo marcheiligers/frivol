@@ -33,8 +33,11 @@ module Frivol
     # - as well as increment_#{bucket}_by(value) method which increments the counter by the value
     # - and similar decrement_#{bucket} and decrement_#{bucket}_by(value) methods
     #
-    # Options are :expires_in which sets the expiry time for a bucket,
-    # and :counter to create a special counter storage bucket.
+    # Options are
+    # - <tt>:expires_in</tt> which sets the expiry time for a bucket;
+    # - <tt>:counter</tt> to create a special counter storage bucket;
+    # - <tt>:condition</tt> that must be satisfied before an action is taken on a bucket;
+    # - <tt>:else</tt>, which is an action that is performed if <tt>:condition</tt> is not satisfied
     def storage_bucket(bucket, options = {})
       time = options[:expires_in]
       storage_expires_in(time, bucket) if !time.nil?
@@ -43,8 +46,8 @@ module Frivol
       seed_callback = options[:seed]
 
 
-      condition_block = Functor.new(self, options[:condition], true).compile
-      else_block      = Functor.new(self, options[:else]).compile
+      condition_block = Functor.new(options[:condition], true).compile
+      else_block      = Functor.new(options[:else]).compile
 
       define_method :condition_evaluation do |*args, &block|
         if instance_exec(*args, &condition_block)

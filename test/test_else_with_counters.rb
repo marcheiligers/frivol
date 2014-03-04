@@ -34,7 +34,6 @@ class TestElseWithCounters < Test::Unit::TestCase
     t = klass.new
 
     t.increment_stars
-
     assert_equal 20, t.retrieve_stars(0)
   end
 end

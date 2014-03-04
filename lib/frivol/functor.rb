@@ -1,26 +1,33 @@
 module Frivol
+  # == Frivol::Functor
+  # Compiles proc, symbols, false, true into a proc that executes within a scope,
+  # or on an object.
   class Functor
-    def initialize(klass, method, default=nil)
-      @klass = klass
+    # Create a new functor which takes:
+    # method: can be a proc, symbol, false or true
+    # default: the value which is returned from the compiled proc if method is
+    #          not a proc, symbol, false or true. Defaults to nil
+    def initialize(method, default=nil)
       @method  = method
       @default = default
     end
 
+    # returns a compiled proc based on the initialization arguments
     def compile
       case @method
       when Proc
         method = @method
-        proc do |*frivol_args|
-          frivol_args.unshift(self)
-          method.call(*frivol_args)
+        proc do |*args|
+          args.unshift(self)
+          method.call(*args)
         end
       when Symbol
         method = @method
-        proc do |*frivol_args|
-          self.send(method, *frivol_args)
+        proc do |*args|
+          self.send(method, *args)
         end
-      when FalseClass
-        proc{ false }
+      when FalseClass, TrueClass
+        proc{ @method }
       else
         default_return = @default
         proc{ default_return }
