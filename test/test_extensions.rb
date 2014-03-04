@@ -1,7 +1,7 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
 class TestExtensions < Test::Unit::TestCase
-  require "#{File.join(File.expand_path(File.dirname(__FILE__)), '../lib/frivol/extensions')}"
+  require "#{File.join(File.expand_path(File.dirname(__FILE__)), '../lib/frivol/time_extensions')}"
 
   def test_time
     time = Time.local(2014, 3, 4, 17, 53, 29)
