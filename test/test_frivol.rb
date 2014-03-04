@@ -143,7 +143,7 @@ class TestFrivol < Test::Unit::TestCase
     # ensure we're getting the result from Redis and not the cache
     redis = Frivol::Config.redis
     def redis.[](key)
-      { :value => 'this is what we want' }.to_json
+      MultiJson.dump(:value => 'this is what we want')
     end
 
     value = t.retrieve_gold :value => "default"
