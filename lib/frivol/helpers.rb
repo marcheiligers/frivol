@@ -2,11 +2,34 @@ module Frivol
   module Helpers #:nodoc:
     require 'multi_json'
 
+    def self.dump_json(hash)
+      MultiJson.dump(hash)
+    end
+
+    def self.load_json(json)
+      hash = MultiJson.load(json)
+      return hash if Frivol::Config.allow_json_create.empty?
+      hash.each do |k,v|
+        if v.is_a?(Hash) && v['json_class']
+          klass = constantize(v['json_class'])
+          hash[k] = klass.send(:json_create, v) if Frivol::Config.allow_json_create.include?(klass)
+        end
+      end
+    end
+
+    def self.constantize(const)
+      unless /\A(?:::)?([A-Z]\w*(?:::[A-Z]\w*)*)\z/ =~ const
+        raise NameError, "#{const.inspect} is not a valid constant name!"
+      end
+      Object.module_eval("::#{$1}", __FILE__, __LINE__)
+    end
+
+
     def self.store_hash(instance, hash, bucket = nil)
       data, is_new = get_data_and_is_new instance
       data[bucket.to_s] = hash
 
-      store_value instance, is_new[bucket.to_s], MultiJson.dump(hash), bucket
+      store_value instance, is_new[bucket.to_s], dump_json(hash), bucket
 
       self.set_data_and_is_new instance, data, is_new
     end
@@ -34,7 +57,7 @@ module Frivol
 
       is_new[bucket.to_s] = json.nil?
 
-      hash = json.nil? ? {} : MultiJson.load(json)
+      hash = json.nil? ? {} : load_json(json)
       data[bucket.to_s] = hash
 
       self.set_data_and_is_new instance, data, is_new

@@ -19,6 +19,8 @@ class Time
   end
 end
 
+Frivol::Config.allow_json_create << Time
+
 begin
   # == ActiveSupport::TimeWithZone
   # An extension to the <tt>ActiveSupport::TimeWithZone</tt> class which allows
@@ -38,6 +40,6 @@ begin
       Time.zone.parse(*o['data'])
     end
   end
-rescue; end
 
-MultiJson.load_options = { :create_additions => true }
+  Frivol::Config.allow_json_create << ActiveSupport::TimeWithZone
+rescue; end

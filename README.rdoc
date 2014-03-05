@@ -94,7 +94,7 @@ legacy Frivol users. In order to use them you will need to have:
    require 'frivol/extensions'
 You can also create your own extensions to save other complex objects in
 Frivol. Your classes will need a <tt>#to_json(*a)</tt> to dump the object
-and a <tt>.json_create(o)</tt> class method to load the object. If you don't
-include this file, you will need to tell <tt>MultiJson</tt> to use the
-<tt>json_create</tt> method with:
-   MultiJson.load_options = { :create_additions => true }
+and a <tt>.json_create(o)</tt> class method to load the object. You will need to
+tell <tt>Frivol</tt> to allow the use of create extensions for your class with:
+   Frivol::Config.allow_json_create << Klass
+
