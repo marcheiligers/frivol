@@ -39,13 +39,19 @@ module Frivol
       time = instance.class.storage_expiry(bucket)
       if time == Frivol::NEVER_EXPIRE
         Frivol::Config.redis[key] = value
-      else
+      elsif Frivol::Config.requires_expiry_reset?
+        time = redis.ttl(key).to_i unless is_new
         Frivol::Config.redis.multi do |redis|
-          # TODO: write test for the to_i bug fix
-          time = redis.ttl(key).to_i unless is_new
           redis[key] = value
           redis.expire(key, time)
         end
+      elsif is_new
+        Frivol::Config.redis.multi do |redis|
+          redis[key] = value
+          redis.expire(key, time)
+        end
+      else
+        Frivol::Config.redis[key] = value
       end
     end
 

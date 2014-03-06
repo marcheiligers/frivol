@@ -4,6 +4,7 @@ class Redis
   def initialize(config)
     @storage = {}
     @expires = Hash.new(nil)
+    @version = config[:version] || "2.2.0"
   end
 
   def [](key)
@@ -16,6 +17,10 @@ class Redis
     # puts "store #{key} => #{value}"
     @storage[key] = value
     @expires.delete key
+  end
+
+  def info(key)
+    { 'redis_version' => @version }
   end
 
   def del(key)

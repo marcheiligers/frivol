@@ -13,12 +13,21 @@ module Frivol
     #   Frivol::Config.redis_config = REDIS_CONFIG
     def self.redis_config=(config)
       @@redis_config = config
+      @@redis_version = nil
       Thread.current[:frivol_redis] = nil
     end
 
     # Returns the configured Redis instance
     def self.redis
       Thread.current[:frivol_redis] ||= Redis.new(@@redis_config)
+    end
+
+    def self.redis_version
+      redis.info('server')['redis_version'].to_f
+    end
+
+    def self.requires_expiry_reset?
+      redis_version < 2.2
     end
 
     def self.allow_json_create
