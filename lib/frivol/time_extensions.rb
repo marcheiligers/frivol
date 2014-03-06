@@ -5,12 +5,17 @@ require 'time'
 # serialized by <tt>MultiJson#dump</tt> and deserialized by
 # <tt>MultiJson#load</tt>.
 class Time
-  # Serialize to JSON
-  def to_json(*a)
-    MultiJson.dump(
+  # Rails support
+  def as_json(*a)
+    {
       'json_class'   => self.class.name,
       'data'         => self.to_s
-    )
+    }
+  end
+
+  # Serialize to JSON
+  def to_json(*a)
+    MultiJson.dump(as_json(*a))
   end
 
   # Deserialize from JSON
@@ -27,12 +32,17 @@ begin
   # instances to be serialized by <tt>MultiJson#dump</tt> and deserialized by
   # <tt>MultiJson#load</tt>.
   class ActiveSupport::TimeWithZone
-    # Serialize to JSON
-    def to_json(*a)
-      MultiJson.dump(
+    # Rails support
+    def as_json(*a)
+      {
         'json_class'   => self.class.name,
         'data'         => self.to_s
-      )
+      }
+    end
+
+    # Serialize to JSON
+    def to_json(*a)
+      MultiJson.dump(as_json(*a))
     end
 
     # Deserialize from JSON
