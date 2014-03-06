@@ -1,6 +1,6 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestFrivol < Test::Unit::TestCase
+class TestThreads < Test::Unit::TestCase
   def test_each_thread_gets_its_own_connection
     threads = []
     2.times do

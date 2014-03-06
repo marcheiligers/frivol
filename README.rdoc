@@ -1,86 +1,100 @@
 = Frivol - Frivolously simple temporary storage backed by Redis
 A really simple Redis-backed temporary storage mechanism intended to be used with ActiveRecord,
-but will work with other ORM's or any classes really. 
-
-I developed Frivol secifically for use in Mad Mimi (http://madmimi.com) to help with caching 
-of data which requires fairly long running (multi-second) database queries, and also to help
-with communication of status from background tasks running in Resque on workers to the front
+but will work with other ORM's or any classes really.
+I developed Frivol secifically for use in Mad Mimi (http://madmimi.com) to help with caching
+of data which requires fairly long running (multi-second) database queries, and also to aid
+with communication of status from background Resque jobs running on the workers to the front
 end web servers. Redis was chosen because we already had Resque, which is Redis-backed. Also,
 unlike memcached, Redis persists it's data to disk, meaning there is far less warmup required
-when a hot system is restarted. Frivol's design is such that it solves our problem, but I 
-believe it is generic enough to be used in many Rails web projects and even in other types of 
-projects altogether. 
+when a hot system is restarted. Frivol's design is such that it solves our problem, but I
+believe it is generic enough to be used in many Rails web projects and even in other types of
+projects altogether.
 
 == Usage
 Configure Frivol in your configuration, for example in an initializer or in environment.rb
   REDIS_CONFIG = {
-    :host => "localhost", 
+    :host => "localhost",
     :port => 6379
   }
   Frivol::Config.redis_config = REDIS_CONFIG
-Now include Frivol in whichever classes you'd like to make use of temporary storage. You can optionally
-call the <tt>storage_expires_in(time)</tt> class method to set a default expiry. In your methods you can 
-now call the <tt>store(keys_and_values)</tt> and <tt>retrieve(keys_and_defaults)</tt> methods.
 
+Now include Frivol in whichever classes you'd like to make use of temporary storage. You can optionally
+call the <tt>storage_expires_in(time)</tt> class method to set a default expiry. In your methods you can
+now call the <tt>store(keys_and_values)</tt> and <tt>retrieve(keys_and_defaults)</tt> methods.
 Defaults in the +retrieve+ method can be symbols, in which case Frivol will check if the class <tt>respond_to?</tt>
 a method by that name to get the default.
 
-The <tt>expire_storage(time)</tt> method can be used to set the expiry time in seconds of the temporary storage. 
+The <tt>expire_storage(time)</tt> method can be used to set the expiry time in seconds of the temporary storage.
 The default is not to expire the storage, in which case it will live for as long as Redis keeps it.
+<tt>delete_storage</tt>, as the name suggests will immediately delete the storage, while <tt>clear_storage</tt>
+will clear the cache that Frivol keeps and force the next <tt>retrieve</tt> to return to Redis for the data.
 
+Since version 0.1.5 Frivol can create different storage buckets. Note that this introduces a breaking change
+to the <tt>storage_key</tt> method if you have overriden it. It now takes a +bucket+ parameter.
+
+Buckets can have their own expiry time and there are special counter buckets which simply keep an integer count.
+  storage_bucket :my_bucket, :expires_in => 5.minutes
+  storage_bucket :my_counter, :counter => true
+
+Given the above, Frivol will create <tt>store_my_bucket</tt> and <tt>retrieve_my_bucket</tt> methods which work
+exactly like the standard +store+ and +retrieve+ methods. There will also be <tt>store_my_counter</tt>,
+<tt>retrieve_my_counter</tt> and <tt>increment_my_counter</tt> methods. The counter store and retrieve only
+take a integer (value and default, respectively) and the increment does not take a parameter. Since version 0.2.1
+there is also <tt>increment_my_counter_by</tt>, <tt>decrement_my_counter</tt> and <tt>decrement_my_counter_by<tt>.
+
+Fine grained control of storing and retrieving values from buckets can be controlled using the :condition and
+:else options.
+  storage_bucket :my_bucket,
+                 :condition => Proc.new{ |object, frivol_method, *args| ... },
+                 :else       => :your_method
+For the above example, frivol execute the :condition proc and passes the instance of the current class, which
+method is being attempted (increment, increment_by, store, retrieve, etc.) and any arguments that may have been
+passed on to frivol.
+If the condition returns a truthy result, the frivol method is executed unimpeded, otherwise frivol moves on to
+:else. :else for the above example is a method on the instance, and that method must be able to receive the frivol
+method used (as a string) and any arguments passed to that method:
+  def your_method(frivol_method, *args)
+    ...
+  end
+The :condition and :else options can be specified as a proc, symbol, true or false.
 Frivol uses the +storage_key+ method to create a base key for storage in Redis. The current implementation uses
 <tt>"#{self.class.name}-#{id}"</tt> so you'll want to override that method if you have classes that don't
-respond to id. 
+respond to id.
 
-Frivol also extends Time to allow it to be (de)serialized to JSON, which currently used to store
-data in Redis.
 == Example
   class BigComplexCalcer
     include Frivol
     storage_expires_in 600 # temporary storage expires in 10 minutes.
-
     def initialize(key)
       @key = key
     end
-
-    def storage_key
-      "frivol-test-#{key}" # override the storage key because we don't respond_to? id
+    def storage_key(bucket = nil)
+      "frivol-test-#{key}" # override the storage key because we don't respond_to? :id, and don't care about buckets
     end
-
     def big_complex_calc
       retrieve :complex => :do_big_complex_calc # do_big_complex_calc is the method to get the default from
     end
-
     def last_calc_done
-      last = retrieve :last => nil # default is nil
+      last = retrieve(:last => nil) # default is nil
       return "never" if last.nil?
-      return "#{Time.now - last} seconds ago"
+      return "#{Time.now - Time.at(last)} seconds ago"
     end
-
     def do_big_complex_calc
       # Wee! Do some really hard work here...
       # ...still working...
-      store :complex => result, :last => Time.now # ...and let's keep the result for at least 10 minutes, as well as the last time we did it
+      store :complex => result, :last => Time.now.to_i # ...and let's keep the result for at least 10 minutes, as well as the last me we did it
     end
   end
 
-Since version 0.2.0, Frivol supports buckets which each get their own storage in Redis and can have their own
-expiry time. A special counter bucket stores only integer values and also has increment and decrement methods.
+== Time Extensions
+These extensions allow the storing and retrieving of <tt>Time</tt> and
+<tt>ActiveSupport::TimeWithZone</tt> objects in Frivol. We now recommend that
+times are stored using <tt>#to_i</tt>, but the extensions are provided for
+legacy Frivol users. In order to use them you will need to have:
+   require 'frivol/extensions'
+You can also create your own extensions to save other complex objects in
+Frivol. Your classes will need a <tt>#to_json(*a)</tt> to dump the object
+and a <tt>.json_create(o)</tt> class method to load the object. You will need to
+tell <tt>Frivol</tt> to allow the use of create extensions for your class with:
+   Frivol::Config.allow_json_create << Klass
 
-== Contributors
-
-* Chris Spring (@autonomous)
-
-== Note on Patches/Pull Requests
- 
-* Fork the project.
-* Make your feature addition or bug fix.
-* Add tests for it. This is important so I don't break it in a
-  future version unintentionally.
-* Commit, do not mess with rakefile, version, or history.
-  (if you want to have your own version, that is fine but bump version in a commit by itself I can ignore when I pull)
-* Send me a pull request. Bonus points for topic branches.
-
-== Copyright
-
-Copyright (c) 2010 Marc Heiligers. See LICENSE for details.
