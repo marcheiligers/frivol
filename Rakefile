@@ -10,8 +10,6 @@ begin
     gem.email = "marc@eternal.co.za"
     gem.homepage = "http://github.com/marcheiligers/frivol"
     gem.authors = ["Marc Heiligers"]
-    gem.add_dependency "multi_json", ">= 1.8.0"
-    gem.add_dependency "redis", ">= 2.0.10"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
