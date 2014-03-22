@@ -1,3 +1,5 @@
+require "redis"
+
 module Frivol
   module Backend
     class Redis

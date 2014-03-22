@@ -1,12 +1,9 @@
-require "redis"
-
 # == Frivol
 module Frivol
   require "frivol/config"
   require "frivol/functor"
   require "frivol/helpers"
   require "frivol/class_methods"
-  require "frivol/backend/redis"
 
   # Defines a constant to indicate that storage should never expire
   NEVER_EXPIRE = nil

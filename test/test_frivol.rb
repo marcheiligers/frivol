@@ -87,7 +87,7 @@ class TestFrivol < Test::Unit::TestCase
   end
 
   def test_use_default_expiry_set_on_the_class
-    klass = Class.new(TestClass) { storage_expires_in -1 }
+    klass = Class.new(TestClass) { storage_expires_in -10 }
     t = klass.new
     t.store :value => 'value'
 
