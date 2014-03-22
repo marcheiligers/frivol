@@ -17,6 +17,14 @@ module Frivol
       Thread.current[:frivol_redis] = nil
     end
 
+    def self.backend=(new_backend)
+      @@backend = new_backend
+    end
+
+    def self.backend
+      @@backend
+    end
+
     # Returns the configured Redis instance
     def self.redis
       Thread.current[:frivol_redis] ||= Redis.new(@@redis_config)

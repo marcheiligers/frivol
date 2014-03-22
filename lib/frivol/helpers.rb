@@ -38,20 +38,21 @@ module Frivol
       key = instance.send(:storage_key, bucket)
       time = instance.class.storage_expiry(bucket)
       if time == Frivol::NEVER_EXPIRE
-        Frivol::Config.redis[key] = value
-      elsif Frivol::Config.requires_expiry_reset?
-        time = redis.ttl(key).to_i unless is_new
-        Frivol::Config.redis.multi do |redis|
-          redis[key] = value
-          redis.expire(key, time)
-        end
+        Frivol::Config.backend.set(key, value)
+      # TODO: Add an override to be able to use old redis
+      # elsif Frivol::Config.requires_expiry_reset?
+      #   time = redis.ttl(key).to_i unless is_new
+      #   Frivol::Config.backend.multi do |redis|
+      #     redis.set(key, value)
+      #     redis.expire(key, time)
+      #   end
       elsif is_new
-        Frivol::Config.redis.multi do |redis|
-          redis[key] = value
+        Frivol::Config.backend.multi do |redis|
+          redis.set(key, value)
           redis.expire(key, time)
         end
       else
-        Frivol::Config.redis[key] = value
+        Frivol::Config.backend.set(key, value)
       end
     end
 
@@ -59,7 +60,7 @@ module Frivol
       data, is_new = get_data_and_is_new instance
       return data[bucket.to_s] if data.key?(bucket.to_s)
       key = instance.send(:storage_key, bucket)
-      json = Frivol::Config.redis[key]
+      json = Frivol::Config.backend.get(key)
 
       is_new[bucket.to_s] = json.nil?
 
@@ -72,7 +73,7 @@ module Frivol
 
     def self.delete_hash(instance, bucket = nil)
       key = instance.send(:storage_key, bucket)
-      Frivol::Config.redis.del key
+      Frivol::Config.backend.del key
       clear_hash(instance, bucket)
     end
 
@@ -96,41 +97,41 @@ module Frivol
 
     def self.store_counter(instance, counter, value)
       key = instance.send(:storage_key, counter)
-      is_new = !Frivol::Config.redis.exists(key)
+      is_new = !Frivol::Config.backend.exists(key)
       store_value instance, is_new, value, counter
     end
 
     def self.retrieve_counter(instance, counter, default)
       key = instance.send(:storage_key, counter)
-      (Frivol::Config.redis[key] || default).to_i
+      (Frivol::Config.backend.get(key) || default).to_i
     end
 
     def self.increment_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.redis.incr(key)
+      Frivol::Config.backend.incr(key)
     end
 
     def self.increment_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.redis.incrby(key, amount)
+      Frivol::Config.backend.incrby(key, amount)
     end
 
     def self.decrement_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.redis.decr(key)
+      Frivol::Config.backend.decr(key)
     end
 
     def self.decrement_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.redis.decrby(key, amount)
+      Frivol::Config.backend.decrby(key, amount)
     end
 
     def self.store_counter_seed_value(key, instance, counter, seed_callback)
-      unless Frivol::Config.redis.exists(key) || seed_callback.nil?
+      unless Frivol::Config.backend.exists(key) || seed_callback.nil?
         store_counter( instance, counter, seed_callback.call(instance))
       end
     end

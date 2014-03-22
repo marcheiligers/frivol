@@ -6,6 +6,7 @@ module Frivol
   require "frivol/functor"
   require "frivol/helpers"
   require "frivol/class_methods"
+  require "frivol/backend/redis"
 
   # Defines a constant to indicate that storage should never expire
   NEVER_EXPIRE = nil
@@ -56,7 +57,7 @@ module Frivol
   # Expire the stored data in +time+ seconds.
   def expire_storage(time, bucket = nil)
     return if time.nil?
-    Frivol::Config.redis.expire storage_key(bucket), time
+    Frivol::Config.backend.expire storage_key(bucket), time
   end
 
   # The base key used for storage in Redis.

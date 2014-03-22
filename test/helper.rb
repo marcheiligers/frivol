@@ -7,14 +7,16 @@ require 'frivol'
 
 class Test::Unit::TestCase
   def setup
-    fake_redis # Comment out this line to test against a real live Redis
-    Frivol::Config.redis_config = { :db => 10 } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
-    Frivol::Config.redis.flushdb
+    # fake_redis # Comment out this line to test against a real live Redis
+    # Frivol::Config.redis_config = { :db => 10 } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
+    # Frivol::Config.redis.flushdb
+    @backend = Frivol::Backend::Redis.new(:db => 10)
+    @backend.flushdb
+    Frivol::Config.backend = @backend
   end
 
   def teardown
-    # puts Frivol::Config.redis.inspect
-    Frivol::Config.redis.flushdb
+    @backend.flushdb
   end
 
   def fake_redis

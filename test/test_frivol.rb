@@ -68,7 +68,7 @@ class TestFrivol < Test::Unit::TestCase
     end.new
 
     t.store :value => 'value'
-    assert Frivol::Config.redis["my_storage"]
+    assert @backend.get("my_storage")
   end
 
   def test_retain_Times_as_Times
@@ -101,10 +101,10 @@ class TestFrivol < Test::Unit::TestCase
     t = Class.new(TestClass) { storage_expires_in 2 }.new
 
     t.store :value => 'value'
-    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+    assert @backend.ttl(t.storage_key) > 0
 
     t.store :value => 'value' # a second time
-    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+    assert @backend.ttl(t.storage_key) > 0
   end
 
   def test_be_able_to_include_in_other_classes_with_storage_expiry
@@ -119,8 +119,8 @@ class TestFrivol < Test::Unit::TestCase
     t = TestClass.new
     t.retrieve :value => 'default'
 
-    redis = Frivol::Config.redis
-    def redis.[](key); raise 'Onoes, loaded again'; end
+    # ensure we're getting the result from the cache and not Redis
+    def @backend.get(key); raise 'Onoes, loaded again'; end
 
     t.retrieve :value => 'default'
   end
@@ -141,8 +141,7 @@ class TestFrivol < Test::Unit::TestCase
     t.clear_gold
 
     # ensure we're getting the result from Redis and not the cache
-    redis = Frivol::Config.redis
-    def redis.[](key)
+    def @backend.get(key)
       MultiJson.dump(:value => 'this is what we want')
     end
 
