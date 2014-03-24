@@ -7,13 +7,13 @@ class Redis
     @version = config[:version] || "2.2.0"
   end
 
-  def [](key)
+  def get(key)
     # puts "retrieve #{key} => #{@storage[key]} (#{(!@expires[key].nil? && @expires[key] < Time.now) ? 'expired' : 'alive'})"
     return nil if !@expires[key].nil? && @expires[key] < Time.now
     @storage[key]
   end
 
-  def []=(key, value)
+  def set(key, value)
     # puts "store #{key} => #{value}"
     @storage[key] = value
     @expires.delete key
