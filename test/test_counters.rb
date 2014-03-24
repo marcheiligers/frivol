@@ -69,4 +69,11 @@ class TestCounters < Test::Unit::TestCase
     t.store_yellow 10
     assert_equal 0, t.retrieve_yellow(0)
   end
+
+  def test_delete_a_counter_bucket
+    t = Class.new(TestClass) { storage_bucket :debt, :counter => true }.new
+    t.store_debt 100_000
+    t.delete_debt
+    assert_equal 0, t.retrieve_debt(0)
+  end
 end

@@ -7,12 +7,52 @@ module Frivol
         @config = config
       end
 
+      # Hashes
       def get(key)
         connection.get(key)
       end
 
-      def set(key, val)
-        connection.set(key, val)
+      def set(key, val, expiry = Frivol::NEVER_EXPIRE)
+        if expiry == Frivol::NEVER_EXPIRE
+          connection.set(key, val)
+        else
+          connection.multi do |redis|
+            redis.set(key, val)
+            redis.expire(key, expiry)
+          end
+        end
+      end
+
+      def del(key)
+        connection.del(key)
+      end
+
+      def exists(key)
+        connection.exists(key)
+      end
+
+      # Counters
+      def getc(key)
+        connection.get(key)
+      end
+
+      def setc(key, val, expiry = Frivol::NEVER_EXPIRE)
+        if expiry == Frivol::NEVER_EXPIRE
+          connection.set(key, val)
+        else
+          connection.multi do |redis|
+            redis.set(key, val)
+            redis.expire(key, expiry)
+          end
+        end
+      end
+
+      def delc(key)
+        connection.del(key)
+      end
+
+      def existsc(key)
+        connection.exists(key)
       end
 
       def incr(key)
@@ -31,28 +71,16 @@ module Frivol
         connection.decrby(key, amt)
       end
 
-      def del(key)
-        connection.del(key)
-      end
-
+      # Expiry/TTL
       def expire(key, ttl)
         connection.expire(key, ttl)
-      end
-
-      def exists(key)
-        connection.exists(key)
       end
 
       def ttl(key)
         connection.ttl(key)
       end
 
-      def multi
-        connection.multi do |redis|
-          yield redis
-        end
-      end
-
+      # Connection
       def flushdb
         connection.flushdb
       end

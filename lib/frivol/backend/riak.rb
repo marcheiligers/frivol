@@ -7,6 +7,7 @@ module Frivol
         @config = config
       end
 
+      # Hashes
       def get(key)
         obj = objects_bucket.get_or_new(key)
         expires_in = ttl(key)
@@ -18,37 +19,74 @@ module Frivol
         end
       end
 
-      def set(key, val)
+      def set(key, val, expiry = Frivol::NEVER_EXPIRE)
         obj = objects_bucket.get_or_new(key)
         obj.raw_data = val
         obj.content_type = 'text/plain'
         obj.store
-      end
-
-      def incr(key)
-        connection.incr(key)
-      end
-
-      def decr(key)
-        connection.decr(key)
-      end
-
-      def incrby(key, amt)
-        connection.incrby(key, amt)
-      end
-
-      def decrby(key, amt)
-        connection.decrby(key, amt)
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
       end
 
       def del(key)
-        objects_bucket.get_or_new(key).delete
+        objects_bucket.delete(key)
       end
 
       def exists(key)
-        objects_bucket.exist?(key) || counters_bucket.exist?(key)
+        objects_bucket.exist?(key)
       end
 
+      # Counters
+      def getc(key)
+        cnt = counters_bucket.counter(key) if existsc(key)
+        expires_in = ttl(key)
+        if expires_in.nil? || expires_in > 0
+          cnt ? cnt.value : nil
+        else
+          delc(key)
+          nil
+        end
+      end
+
+      def setc(key, val, expiry = Frivol::NEVER_EXPIRE)
+        delc(key)
+        cnt = counters_bucket.counter(key)
+        cnt.increment(val)
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
+      end
+
+      def delc(key)
+        counters_bucket.delete(key)
+      end
+
+      def existsc(key)
+        counters_bucket.exist?(key)
+      end
+
+      def incr(key)
+        cnt = counters_bucket.counter(key)
+        cnt.increment
+        cnt.value
+      end
+
+      def decr(key)
+        cnt = counters_bucket.counter(key)
+        cnt.decrement
+        cnt.value
+      end
+
+      def incrby(key, amt)
+        cnt = counters_bucket.counter(key)
+        cnt.increment(amt)
+        cnt.value
+      end
+
+      def decrby(key, amt)
+        cnt = counters_bucket.counter(key)
+        cnt.decrement(amt)
+        cnt.value
+      end
+
+      # Expiry/TTL
       def expire(key, ttl)
         obj = expires_bucket.get_or_new(key)
         obj.raw_data = (Time.now.to_i + ttl).to_s
@@ -66,15 +104,11 @@ module Frivol
         end
       end
 
-      def multi
-        yield self
-      end
-
+      # Connection
       def flushdb
-        objects_bucket.keys { |k| del(k) }
-        counters_bucket.keys { |k| del(k) }
-        expires_bucket.keys { |k| del(k) }
-        sleep 0.2 # Give Riak a little time to reach consistency
+        objects_bucket.keys.each { |k| objects_bucket.delete(k) }
+        counters_bucket.keys.each { |k| counters_bucket.delete(k) }
+        expires_bucket.keys.each { |k| expires_bucket.delete(k) }
       end
 
       def connection

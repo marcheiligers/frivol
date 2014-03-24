@@ -33,18 +33,18 @@ class TestFrivolize < Test::Unit::TestCase
       @@count = 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
-      def dinosaur_count
+      def dinosaurus_count
         @@count += 1
       end
-      frivolize :dinosaur_count, { :bucket => :dinosaurs, :expires_in => -1 }
+      frivolize :dinosaurus_count, { :bucket => :dinosauruss, :expires_in => -1 }
     end
 
     t = klass.new
-    assert_equal 1, t.dinosaur_count
-    assert_equal 1, t.dinosaur_count # Still 10 because it's coming from the class cache
+    assert_equal 1, t.dinosaurus_count
+    assert_equal 1, t.dinosaurus_count # Still 10 because it's coming from the class cache
 
     t = klass.new
-    assert_equal 2, t.dinosaur_count
+    assert_equal 2, t.dinosaurus_count
   end
 
   def test_frivolize_methods_with_expiry_as_a_counter
@@ -53,19 +53,19 @@ class TestFrivolize < Test::Unit::TestCase
       @@count = 0
 
       # Imagine counting dinosuars takes a long time, what with the need to invent a time machine first and all
-      def dinosaur_count
+      def dinosaurii_count
         @@count += 1
       end
-      frivolize :dinosaur_count, { :expires_in => -1, :counter => true }
+      frivolize :dinosaurii_count, { :expires_in => -1, :counter => true }
     end
 
     t = klass.new
-    assert t.methods.include?(ruby_one_eight? ? 'store_dinosaur_count' : :store_dinosaur_count) # check that the bucket name is the method name
+    assert t.methods.include?(ruby_one_eight? ? 'store_dinosaurii_count' : :store_dinosaurii_count) # check that the bucket name is the method name
 
-    assert_equal 1, t.dinosaur_count
+    assert_equal 1, t.dinosaurii_count
 
     t = klass.new # a fresh instance after value expired
-    assert_equal 2, t.dinosaur_count
+    assert_equal 2, t.dinosaurii_count
   end
 
   def test_frivolize_with_seed_as_a_counter_for_increment
@@ -73,7 +73,7 @@ class TestFrivolize < Test::Unit::TestCase
       def bak_baks
         88_888
       end
-      frivolize :bak_baks, :counter => true, :seed => Proc.new{ |obj| obj.bak_baks}
+      frivolize :bak_baks, :counter => true, :seed => Proc.new{ |obj| obj.bak_baks }
     end.new
 
     assert_equal 88_888 + 1, t.increment_bak_baks

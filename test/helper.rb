@@ -7,20 +7,29 @@ require 'frivol'
 
 class Test::Unit::TestCase
   def setup
-    # fake_redis # Comment out this line to test against a real live Redis
-    # Frivol::Config.redis_config = { :db => 10 } # This will connect to a default Redis setup, otherwise set to { :host => "localhost", :port => 6379 }, for example
-    # Frivol::Config.redis.flushdb
-
-    # require 'frivol/backend/redis'
-    # @backend = Frivol::Backend::Redis.new(:db => 10)
-    # @backend.flushdb
-    # Frivol::Config.backend = @backend
-
-    require 'frivol/backend/riak'
-    Riak.disable_list_keys_warnings = true
-    @backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
-    @backend.flushdb
-    Frivol::Config.backend = @backend
+    case ENV['backend']
+    when 'redis'
+      require 'frivol/backend/redis'
+      @backend = Frivol::Backend::Redis.new(:db => 10)
+      @backend.flushdb
+      Frivol::Config.backend = @backend
+    when 'riak'
+      require 'frivol/backend/riak'
+      I18n.enforce_available_locales = false
+      Riak.disable_list_keys_warnings = true
+      @backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @backend.flushdb
+      Frivol::Config.backend = @backend
+    else
+      require 'frivol/backend/redis'
+      fake_redis # Comment out this line to test against a real live Redis
+      @backend = Frivol::Backend::Redis.new(:db => 10)
+      @backend.flushdb
+      Frivol::Config.backend = @backend
+    end
+    # NOTE: Because some backends like Riak are eventually consistent,
+    #   we're changing the id of the test class per test.
+    @test_id = TestClass.incr_id
   end
 
   def teardown
@@ -39,7 +48,13 @@ end
 class TestClass
   include Frivol
 
+  @@id = 1
+
+  def self.incr_id
+    @@id += 1
+  end
+
   def id
-    1
+    @@id
   end
 end

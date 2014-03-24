@@ -3,7 +3,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 class TestFrivol < Test::Unit::TestCase
   def test_have_a_default_storage_key_made_up_of_the_class_name_and_id
     t = TestClass.new
-    assert_equal "TestClass-1", t.storage_key
+    assert_equal "TestClass-#{@test_id}", t.storage_key
   end
 
   def test_store_and_retrieve_data

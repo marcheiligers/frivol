@@ -92,6 +92,12 @@ module Frivol
           define_method "decrement_#{bucket}_by" do |amount|
             Frivol::Helpers.decrement_counter_by(self, bucket, amount, seed_callback)
           end
+
+          define_method "delete_#{bucket}" do
+            condition_evaluation("delete_#{bucket}") do
+              Frivol::Helpers.delete_counter(self, bucket)
+            end
+          end
         else
           define_method "store_#{bucket}" do |keys_and_values|
             condition_evaluation("store_#{bucket}", keys_and_values) do
@@ -115,11 +121,11 @@ module Frivol
             return result.first if result.size == 1
             result
           end
-        end
 
-        define_method "delete_#{bucket}" do
-          condition_evaluation("delete_#{bucket}") do
-            Frivol::Helpers.delete_hash(self, bucket)
+          define_method "delete_#{bucket}" do
+            condition_evaluation("delete_#{bucket}") do
+              Frivol::Helpers.delete_hash(self, bucket)
+            end
           end
         end
 
