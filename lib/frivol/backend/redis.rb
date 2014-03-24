@@ -11,6 +11,7 @@ module Frivol
       def get(key)
         connection.get(key)
       end
+      alias_method :getc, :get # Counter method alias
 
       def set(key, val, expiry = Frivol::NEVER_EXPIRE)
         if expiry == Frivol::NEVER_EXPIRE
@@ -22,39 +23,19 @@ module Frivol
           end
         end
       end
+      alias_method :setc, :set # Counter method alias
 
       def del(key)
         connection.del(key)
       end
+      alias_method :delc, :del # Counter method alias
 
       def exists(key)
         connection.exists(key)
       end
+      alias_method :existsc, :exists # Counter method alias
 
       # Counters
-      def getc(key)
-        connection.get(key)
-      end
-
-      def setc(key, val, expiry = Frivol::NEVER_EXPIRE)
-        if expiry == Frivol::NEVER_EXPIRE
-          connection.set(key, val)
-        else
-          connection.multi do |redis|
-            redis.set(key, val)
-            redis.expire(key, expiry)
-          end
-        end
-      end
-
-      def delc(key)
-        connection.del(key)
-      end
-
-      def existsc(key)
-        connection.exists(key)
-      end
-
       def incr(key)
         connection.incr(key)
       end

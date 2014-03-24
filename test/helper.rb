@@ -13,6 +13,11 @@ class Test::Unit::TestCase
       @backend = Frivol::Backend::Redis.new(:db => 10)
       @backend.flushdb
       Frivol::Config.backend = @backend
+    when 'redis_distributed'
+      require 'frivol/backend/redis_distributed'
+      @backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
+      @backend.flushdb
+      Frivol::Config.backend = @backend
     when 'riak'
       require 'frivol/backend/riak'
       I18n.enforce_available_locales = false
