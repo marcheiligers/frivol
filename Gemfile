@@ -8,6 +8,8 @@ group :development do
 end
 
 group :test do
+  gem 'pry'
+  gem 'pry-debugger'
   gem 'test-unit'
   gem 'redis'
   gem 'riak-client'

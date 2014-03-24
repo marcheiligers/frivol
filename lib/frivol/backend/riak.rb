@@ -62,27 +62,31 @@ module Frivol
         counters_bucket.exist?(key)
       end
 
-      def incr(key)
+      def incr(key, expiry = Frivol::NEVER_EXPIRE)
         cnt = counters_bucket.counter(key)
         cnt.increment
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
         cnt.value
       end
 
-      def decr(key)
+      def decr(key, expiry = Frivol::NEVER_EXPIRE)
         cnt = counters_bucket.counter(key)
         cnt.decrement
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
         cnt.value
       end
 
-      def incrby(key, amt)
+      def incrby(key, amt, expiry = Frivol::NEVER_EXPIRE)
         cnt = counters_bucket.counter(key)
         cnt.increment(amt)
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
         cnt.value
       end
 
-      def decrby(key, amt)
+      def decrby(key, amt, expiry = Frivol::NEVER_EXPIRE)
         cnt = counters_bucket.counter(key)
         cnt.decrement(amt)
+        expire(key, expiry) unless expiry == Frivol::NEVER_EXPIRE
         cnt.value
       end
 

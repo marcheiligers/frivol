@@ -20,6 +20,18 @@ module Frivol
       def connection
         Thread.current[thread_key] ||= ::Redis::Distributed.new(@config)
       end
+
+    private
+      def set_with_expiry(key, val, expiry, method = :set)
+        if expiry == Frivol::NEVER_EXPIRE
+          connection.send(method, key, val)
+        else
+          connection.node_for(key).multi do |redis|
+            redis.send(method, key, val)
+            redis.expire(key, expiry)
+          end
+        end
+      end
     end
   end
 end

@@ -14,14 +14,7 @@ module Frivol
       alias_method :getc, :get # Counter method alias
 
       def set(key, val, expiry = Frivol::NEVER_EXPIRE)
-        if expiry == Frivol::NEVER_EXPIRE
-          connection.set(key, val)
-        else
-          connection.multi do |redis|
-            redis.set(key, val)
-            redis.expire(key, expiry)
-          end
-        end
+        set_with_expiry(key, val, expiry)
       end
       alias_method :setc, :set # Counter method alias
 
@@ -36,20 +29,20 @@ module Frivol
       alias_method :existsc, :exists # Counter method alias
 
       # Counters
-      def incr(key)
-        connection.incr(key)
+      def incr(key, expiry = Frivol::NEVER_EXPIRE)
+        set_with_expiry(key, 1, expiry, :incrby)
       end
 
-      def decr(key)
-        connection.decr(key)
+      def decr(key, expiry = Frivol::NEVER_EXPIRE)
+        set_with_expiry(key, 1, expiry, :decrby)
       end
 
-      def incrby(key, amt)
-        connection.incrby(key, amt)
+      def incrby(key, amt, expiry = Frivol::NEVER_EXPIRE)
+        set_with_expiry(key, amt, expiry, :incrby)
       end
 
-      def decrby(key, amt)
-        connection.decrby(key, amt)
+      def decrby(key, amt, expiry = Frivol::NEVER_EXPIRE)
+        set_with_expiry(key, amt, expiry, :decrby)
       end
 
       # Expiry/TTL
@@ -73,6 +66,17 @@ module Frivol
     private
       def thread_key
         @thread_key ||= @config.hash.to_s.to_sym
+      end
+
+      def set_with_expiry(key, val, expiry, method = :set)
+        if expiry == Frivol::NEVER_EXPIRE
+          connection.send(method, key, val)
+        else
+          connection.multi do |redis|
+            redis.send(method, key, val)
+            redis.expire(key, expiry)
+          end
+        end
       end
     end
   end

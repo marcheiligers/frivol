@@ -77,7 +77,7 @@ module Frivol
 
     def self.store_counter(instance, counter, value)
       key = instance.send(:storage_key, counter)
-      exists = Frivol::Config.backend.exists(key)
+      exists = Frivol::Config.backend.existsc(key)
       time = instance.class.storage_expiry(counter)
       Frivol::Config.backend.setc(key, value, exists ? nil : time)
     end
@@ -90,25 +90,33 @@ module Frivol
     def self.increment_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.backend.incr(key)
+      exists = Frivol::Config.backend.existsc(key)
+      time = instance.class.storage_expiry(counter)
+      Frivol::Config.backend.incr(key, exists ? nil : time)
     end
 
     def self.increment_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.backend.incrby(key, amount)
+      exists = Frivol::Config.backend.existsc(key)
+      time = instance.class.storage_expiry(counter)
+      Frivol::Config.backend.incrby(key, amount, exists ? nil : time)
     end
 
     def self.decrement_counter(instance, counter, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.backend.decr(key)
+      exists = Frivol::Config.backend.existsc(key)
+      time = instance.class.storage_expiry(counter)
+      Frivol::Config.backend.decr(key, exists ? nil : time)
     end
 
     def self.decrement_counter_by(instance, counter, amount, seed_callback=nil)
       key = instance.send(:storage_key, counter)
       store_counter_seed_value(key, instance, counter, seed_callback)
-      Frivol::Config.backend.decrby(key, amount)
+      exists = Frivol::Config.backend.existsc(key)
+      time = instance.class.storage_expiry(counter)
+      Frivol::Config.backend.decrby(key, amount, exists ? nil : time)
     end
 
     def self.delete_counter(instance, counter = nil)

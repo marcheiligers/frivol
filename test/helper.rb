@@ -25,6 +25,16 @@ class Test::Unit::TestCase
       @backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
       @backend.flushdb
       Frivol::Config.backend = @backend
+    when 'multi'
+      require 'frivol/backend/redis'
+      require 'frivol/backend/redis_distributed'
+      require 'frivol/backend/multi'
+      @backend = Frivol::Backend::Multi.new([
+        Frivol::Backend::Redis.new(:db => 10),
+        Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
+      ])
+      @backend.flushdb
+      Frivol::Config.backend = @backend
     else
       require 'frivol/backend/redis'
       fake_redis # Comment out this line to test against a real live Redis
