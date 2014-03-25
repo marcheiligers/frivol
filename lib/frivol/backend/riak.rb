@@ -8,7 +8,7 @@ module Frivol
       end
 
       # Hashes
-      def get(key)
+      def get(key, expiry = Frivol::NEVER_EXPIRE)
         obj = objects_bucket.get_or_new(key)
         expires_in = ttl(key)
         if expires_in.nil? || expires_in > 0
@@ -32,11 +32,20 @@ module Frivol
       end
 
       def exists(key)
-        objects_bucket.exist?(key)
+        exists = objects_bucket.exist?(key)
+        if exists
+          expires_in = ttl(key)
+          if expires_in.nil? || expires_in > 0
+            true
+          else
+            objects_bucket.delete(key)
+            false
+          end
+        end
       end
 
       # Counters
-      def getc(key)
+      def getc(key, expiry = Frivol::NEVER_EXPIRE)
         cnt = counters_bucket.counter(key) if existsc(key)
         expires_in = ttl(key)
         if expires_in.nil? || expires_in > 0
@@ -59,7 +68,16 @@ module Frivol
       end
 
       def existsc(key)
-        counters_bucket.exist?(key)
+        exists = counters_bucket.exist?(key)
+        if exists
+          expires_in = ttl(key)
+          if expires_in.nil? || expires_in > 0
+            true
+          else
+            counters_bucket.delete(key)
+            false
+          end
+        end
       end
 
       def incr(key, expiry = Frivol::NEVER_EXPIRE)

@@ -72,7 +72,7 @@ class TestCounters < Test::Unit::TestCase
 
   def test_expire_on_a_counter_bucket_using_increment
     t = Class.new(TestClass) { storage_bucket :fuscia, :counter => true, :expires_in => -1 }.new
-    t.increment_fuscia
+    assert_equal 1, t.increment_fuscia
     assert_equal 0, t.retrieve_fuscia(0)
   end
 

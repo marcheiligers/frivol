@@ -40,7 +40,8 @@ module Frivol
       data, is_new = get_data_and_is_new instance
       return data[bucket.to_s] if data.key?(bucket.to_s)
       key = instance.send(:storage_key, bucket)
-      json = Frivol::Config.backend.get(key)
+      time = instance.class.storage_expiry(bucket)
+      json = Frivol::Config.backend.get(key, time)
 
       is_new[bucket.to_s] = json.nil?
 
@@ -84,7 +85,8 @@ module Frivol
 
     def self.retrieve_counter(instance, counter, default)
       key = instance.send(:storage_key, counter)
-      (Frivol::Config.backend.getc(key) || default).to_i
+      time = instance.class.storage_expiry(counter)
+      (Frivol::Config.backend.getc(key, time) || default).to_i
     end
 
     def self.increment_counter(instance, counter, seed_callback=nil)

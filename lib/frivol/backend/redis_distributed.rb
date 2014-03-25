@@ -26,10 +26,11 @@ module Frivol
         if expiry == Frivol::NEVER_EXPIRE
           connection.send(method, key, val)
         else
-          connection.node_for(key).multi do |redis|
+          results = connection.node_for(key).multi do |redis|
             redis.send(method, key, val)
             redis.expire(key, expiry)
           end
+          results[0]
         end
       end
     end

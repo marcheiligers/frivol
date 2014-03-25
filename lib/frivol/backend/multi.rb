@@ -7,10 +7,9 @@ module Frivol
       end
 
       # Hashes
-      def get(key)
+      def get(key, expiry = Frivol::NEVER_EXPIRE)
         val = @primary_backend.get(key)
-        puts "from here"
-        val = migrate(key) if val.nil?
+        val = migrate(key, expiry) if val.nil?
         val
       end
 
@@ -30,9 +29,9 @@ module Frivol
       end
 
       # Counters
-      def getc(key)
+      def getc(key, expiry = Frivol::NEVER_EXPIRE)
         val = @primary_backend.getc(key)
-        val = migratec(key) if val.nil?
+        val = migratec(key, :getc, 0, expiry) if val.nil?
         val
       end
 
@@ -117,7 +116,7 @@ module Frivol
           val = backend.get(key)
           ttl = backend.ttl(key)
           @primary_backend.set(key, val, ttl)
-          backend.del key
+          @other_backends.each { |be| be.del key }
           val
         else
           @primary_backend.set(key, val, ttl)
@@ -130,12 +129,15 @@ module Frivol
         if backend
           val = backend.getc(key)
           ttl = backend.ttl(key)
-          @primary_backend.send(method, key, amt)
+          @primary_backend.incrby(key, val) unless val.zero?
+          val = @primary_backend.send(method, key, amt) unless amt.zero? || method == :getc
           @primary_backend.expire(key, ttl) if ttl
-          backend.delc key
+          @other_backends.each { |be| be.delc key }
           val
-        else
+        elsif method != :getc
           @primary_backend.send(method, key, amt, expiry)
+        else
+          nil
         end
       end
     end

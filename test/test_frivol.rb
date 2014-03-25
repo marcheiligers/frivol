@@ -141,7 +141,7 @@ class TestFrivol < Test::Unit::TestCase
     t.clear_gold
 
     # ensure we're getting the result from Redis and not the cache
-    def @backend.get(key)
+    def @backend.get(key, expiry = nil)
       MultiJson.dump(:value => 'this is what we want')
     end
 

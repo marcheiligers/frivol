@@ -8,7 +8,7 @@ module Frivol
       end
 
       # Hashes
-      def get(key)
+      def get(key, expiry = Frivol::NEVER_EXPIRE)
         connection.get(key)
       end
       alias_method :getc, :get # Counter method alias
@@ -72,10 +72,11 @@ module Frivol
         if expiry == Frivol::NEVER_EXPIRE
           connection.send(method, key, val)
         else
-          connection.multi do |redis|
+          result = connection.multi do |redis|
             redis.send(method, key, val)
             redis.expire(key, expiry)
           end
+          result[0]
         end
       end
     end

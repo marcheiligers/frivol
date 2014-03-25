@@ -10,7 +10,6 @@
 
 
 # TODO/BUGS(?):
-- DECIDE whether get/getc in multi should migrate or not. if they migrate they must receive expiry
 - clear_storage for counters
 - clear_* method tests
 - hook AR reload method to clear_storage?
@@ -18,3 +17,4 @@
 - Riak exists doesn't check expiry
 - Remove backend methods that are not required
 - Remove pry
+- When deleting objects on the Riak backend, also delete the expiry
