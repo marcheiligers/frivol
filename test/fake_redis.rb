@@ -63,7 +63,7 @@ class Redis
   end
 
   def exists(key)
-    @storage.key? key
+    @storage.key?(key) && (@expires[key].nil? || Time.now < @expires[key])
   end
 
   def ttl(key)
