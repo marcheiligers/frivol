@@ -2,7 +2,7 @@ module Frivol
   module Backend
     class Multi
       def initialize(backends)
-        @primary_backend = backends.pop
+        @primary_backend = backends.shift
         @other_backends = backends
       end
 
@@ -94,6 +94,7 @@ module Frivol
             expiry = be.ttl(key)
             return expiry unless expiry.nil?
           end
+          nil
         else
           expiry
         end
@@ -117,9 +118,6 @@ module Frivol
           ttl = backend.ttl(key)
           @primary_backend.set(key, val, ttl)
           @other_backends.each { |be| be.del key }
-          val
-        else
-          @primary_backend.set(key, val, ttl)
           val
         end
       end

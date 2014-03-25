@@ -1,6 +1,17 @@
 require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 
-class TestFrivolize < Test::Unit::TestCase
+class TestBackends < Test::Unit::TestCase
+  def test_ttl
+    t = TestClass.new
+    assert_nil @backend.ttl(t.storage_key)
+
+    t.store :something => 'somewhere'
+    assert_nil @backend.ttl(t.storage_key)
+
+    t.expire_storage 10
+    assert_equal 10, @backend.ttl(t.storage_key)
+  end
+
   def test_exists
     t = TestClass.new
     refute @backend.exists(t.storage_key)

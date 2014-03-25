@@ -29,10 +29,9 @@ class Test::Unit::TestCase
       require 'frivol/backend/redis'
       require 'frivol/backend/redis_distributed'
       require 'frivol/backend/multi'
-      @backend = Frivol::Backend::Multi.new([
-        Frivol::Backend::Redis.new(:db => 10),
-        Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
-      ])
+      @old_backend = Frivol::Backend::Redis.new(:db => 10)
+      @new_backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
+      @backend = Frivol::Backend::Multi.new([ @new_backend, @old_backend ])
       @backend.flushdb
       Frivol::Config.backend = @backend
     else
@@ -57,6 +56,10 @@ class Test::Unit::TestCase
 
   def ruby_one_eight?
     @ruby_one_eight || `ruby -v`.include?('1.8')
+  end
+
+  def self.multi_test?
+    ENV['backend'] == 'multi'
   end
 end
 

@@ -51,7 +51,8 @@ module Frivol
       end
 
       def ttl(key)
-        connection.ttl(key)
+        time = connection.ttl(key)
+        time < 0 ? nil : time
       end
 
       # Connection
