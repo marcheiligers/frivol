@@ -22,6 +22,15 @@ class TestMultiBackendCounters < Test::Unit::TestCase
       assert @backend.exists(t.storage_key(:doves))
     end
 
+    def test_delc
+      t = Class.new(TestClass) { storage_bucket :toucans, :counter => true }.new
+      @old_backend.set(t.storage_key(:toucans), 2)
+      assert @backend.exists(t.storage_key(:toucans))
+      @backend.del(t.storage_key(:toucans))
+      refute @backend.exists(t.storage_key(:toucans))
+      refute @old_backend.exists(t.storage_key(:toucans))
+    end
+
     def test_getc
       t = Class.new(TestClass) { storage_bucket :parrots, :counter => true }.new
       @old_backend.setc(t.storage_key(:parrots), 1)
