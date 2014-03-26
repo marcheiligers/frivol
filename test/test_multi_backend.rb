@@ -6,6 +6,16 @@ class TestMultiBackend < Test::Unit::TestCase
     VALUE  = 'bar'
     DATA   = Frivol::Helpers.dump_json({ KEY => VALUE })
 
+    def test_backends_must_be_uniq
+      assert_raises Frivol::Backend::Multi::BackendsNotUniqueError do
+        Frivol::Backend::Multi.new([ @old_backend, @old_backend ])
+      end
+
+      assert_raises Frivol::Backend::Multi::BackendsNotUniqueError do
+        Frivol::Backend::Multi.new([ @new_backend, @new_backend ])
+      end
+    end
+
     def test_ttl
       t = TestClass.new
       assert_nil @backend.ttl(t.storage_key)

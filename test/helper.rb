@@ -15,7 +15,7 @@ class Test::Unit::TestCase
       Frivol::Config.backend = @backend
     when 'redis_distributed'
       require 'frivol/backend/redis_distributed'
-      @backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
+      @backend = Frivol::Backend::RedisDistributed.new([{:db => 11}, {:db => 12}])
       @backend.flushdb
       Frivol::Config.backend = @backend
     when 'riak'
@@ -123,6 +123,10 @@ class Test::Unit::TestCase
 
   def self.multi_test?
     ENV['backend'].to_s.start_with?('multi')
+  end
+
+  def self.riak_test?
+    ENV['backend'].to_s.include?('riak')
   end
 end
 

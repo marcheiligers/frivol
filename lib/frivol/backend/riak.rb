@@ -4,6 +4,7 @@ module Frivol
   module Backend
     class Riak
       def initialize(config)
+        @prefix = config.delete(:prefix) || ''
         @config = config
       end
 
@@ -147,7 +148,7 @@ module Frivol
     private
       def objects_bucket
         @objects_bucket ||= begin
-          bkt = connection.bucket("frivol_objects")
+          bkt = connection.bucket("#{@prefix}frivol_objects")
           bkt.props = { :last_write_wins => true }
           bkt
         end
@@ -155,7 +156,7 @@ module Frivol
 
       def counters_bucket
         @counters_bucket ||= begin
-          bkt = connection.bucket("frivol_counters")
+          bkt = connection.bucket("#{@prefix}frivol_counters")
           bkt.allow_mult = true
           bkt
         end
@@ -163,7 +164,7 @@ module Frivol
 
       def expires_bucket
         @expires_bucket ||= begin
-          bkt = connection.bucket("frivol_expires")
+          bkt = connection.bucket("#{@prefix}frivol_expires")
           bkt.props = { :last_write_wins => true }
           bkt
         end

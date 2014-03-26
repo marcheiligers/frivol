@@ -10,14 +10,6 @@
 
 
 # TODO/BUGS(?):
-- clear_storage for counters
-- clear_* method tests
-- hook AR reload method to clear_storage?
-- add a way (maybe using MR) to expire keys in Riak
-- Riak exists doesn't check expiry
-- Remove backend methods that are not required
-- Remove pry
-- Now, counters always have their expiry reset
-- Test multi with other mixtures of backends
-- Add key prefix option to riak backend
-- Ensure backends are different for multi
+- Hook AR reload method to clear_storage?
+- Add a way (maybe using MR) to expire keys in Riak
+- BUG: Now, counters always have their expiry reset

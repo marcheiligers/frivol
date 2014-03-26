@@ -1,7 +1,12 @@
 module Frivol
   module Backend
     class Multi
+      BackendsNotUniqueError = Class.new(StandardError)
+
       def initialize(backends)
+        unless backends.map(&:inspect).uniq.size == backends.size
+          raise BackendsNotUniqueError, "Backends are not unique: #{backends.map(&:inspect).join(', ')}"
+        end
         @primary_backend = backends.shift
         @other_backends = backends
       end
