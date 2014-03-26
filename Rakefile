@@ -24,6 +24,23 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
+namespace :test do
+  desc 'Test all backends and the Multi backend in all combinations'
+  task :all do
+    %w[
+      fake_redis redis redis_distributed riak multi
+      multi_redis_redis multi_redis_redis_distributed
+      multi_redis_riak multi_redis_distributed_riak
+      multi_riak_redis multi_riak_redis_distributed
+    ].each do |backend|
+      puts "Testing #{backend}"
+      ENV['backend'] = backend
+      Rake::Task["test"].reenable
+      Rake::Task["test"].invoke
+    end
+  end
+end
+
 task :default => :test
 
 begin
