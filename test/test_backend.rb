@@ -9,7 +9,7 @@ class TestBackends < Test::Unit::TestCase
     assert_nil @backend.ttl(t.storage_key)
 
     t.expire_storage 10
-    assert_equal 10, @backend.ttl(t.storage_key)
+    assert_in_delta 10, @backend.ttl(t.storage_key), 2
   end
 
   def test_exists

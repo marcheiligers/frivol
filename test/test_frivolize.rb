@@ -41,7 +41,7 @@ class TestFrivolize < Test::Unit::TestCase
 
     t = klass.new
     assert_equal 1, t.dinosaurus_count
-    assert_equal 1, t.dinosaurus_count # Still 10 because it's coming from the class cache
+    assert_equal 1, t.dinosaurus_count # Still 1 because it's coming from the class cache
 
     t = klass.new
     assert_equal 2, t.dinosaurus_count
