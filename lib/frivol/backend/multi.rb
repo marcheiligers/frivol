@@ -125,7 +125,7 @@ module Frivol
       def migratec(key, method = :incrby, amt = 0, expiry = Frivol::NEVER_EXPIRE)
         backend = @other_backends.detect { |be| be.existsc(key) }
         if backend
-          val = backend.getc(key)
+          val = backend.getc(key).to_i
           ttl = backend.ttl(key)
           @primary_backend.incrby(key, val) unless val.zero?
           val = @primary_backend.send(method, key, amt) unless amt.zero? || method == :getc

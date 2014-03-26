@@ -62,7 +62,6 @@ class TestFrivolize < Test::Unit::TestCase
     t = klass.new
     assert t.methods.include?(ruby_one_eight? ? 'store_dinosaurii_count' : :store_dinosaurii_count) # check that the bucket name is the method name
 
-    # require 'pry'; binding.pry
     assert_equal 1, t.dinosaurii_count
 
     t = klass.new # a fresh instance after value expired
