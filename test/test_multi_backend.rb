@@ -22,6 +22,15 @@ class TestMultiBackend < Test::Unit::TestCase
       assert @backend.exists(t.storage_key)
     end
 
+    def test_del
+      t = TestClass.new
+      @old_backend.set(t.storage_key, DATA)
+      assert @backend.exists(t.storage_key)
+      @backend.del(t.storage_key)
+      refute @backend.exists(t.storage_key)
+      refute @old_backend.exists(t.storage_key)
+    end
+
     def test_get
       t = TestClass.new
       @old_backend.set(t.storage_key, DATA)

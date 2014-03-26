@@ -70,7 +70,7 @@ module Frivol
         if @primary_backend.existsc(key)
           @primary_backend.incrby(key, amt)
         else
-          migratec(key, :incrby, 1, expiry)
+          migratec(key, :incrby, amt, expiry)
         end
       end
 
@@ -78,7 +78,7 @@ module Frivol
         if @primary_backend.existsc(key)
           @primary_backend.decrby(key, amt)
         else
-          migratec(key, :decrby, 1, expiry)
+          migratec(key, :decrby, amt, expiry)
         end
       end
 

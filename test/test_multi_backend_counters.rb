@@ -42,8 +42,8 @@ class TestMultiBackendCounters < Test::Unit::TestCase
 
     def test_setc
       t = Class.new(TestClass) { storage_bucket :parakeets, :counter => true }.new
-      @old_backend.set(t.storage_key(:parakeets), 1)
-      @backend.set(t.storage_key(:parakeets), 2)
+      @old_backend.setc(t.storage_key(:parakeets), 1)
+      @backend.setc(t.storage_key(:parakeets), 2)
       assert_equal 2, @backend.getc(t.storage_key(:parakeets)).to_i
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key(:parakeets))
@@ -58,6 +58,46 @@ class TestMultiBackendCounters < Test::Unit::TestCase
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key(:macaws))
       refute @old_backend.exists(t.storage_key(:macaws))
+    end
+
+    def test_increment
+      t = Class.new(TestClass) { storage_bucket :cockatoos, :counter => true }.new
+      @old_backend.set(t.storage_key(:cockatoos), 2)
+      t.increment_cockatoos
+      assert_equal 3, t.retrieve_cockatoos(0)
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:cockatoos))
+      refute @old_backend.exists(t.storage_key(:cockatoos))
+    end
+
+    def test_increment_by
+      t = Class.new(TestClass) { storage_bucket :canaries, :counter => true }.new
+      @old_backend.set(t.storage_key(:canaries), 3)
+      t.increment_canaries_by(6)
+      assert_equal 9, t.retrieve_canaries(0)
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:canaries))
+      refute @old_backend.exists(t.storage_key(:canaries))
+    end
+
+    def test_decrement
+      t = Class.new(TestClass) { storage_bucket :budgies, :counter => true }.new
+      @old_backend.set(t.storage_key(:budgies), 7)
+      t.decrement_budgies
+      assert_equal 6, t.retrieve_budgies(0)
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:budgies))
+      refute @old_backend.exists(t.storage_key(:budgies))
+    end
+
+    def test_decrement_by
+      t = Class.new(TestClass) { storage_bucket :finches, :counter => true }.new
+      @old_backend.set(t.storage_key(:finches), 8)
+      t.decrement_finches_by(2)
+      assert_equal 6, t.retrieve_finches(0)
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:finches))
+      refute @old_backend.exists(t.storage_key(:finches))
     end
 
   end

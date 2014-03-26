@@ -19,3 +19,5 @@
 - Remove pry
 - When deleting objects on the Riak backend, also delete the expiry
 - Now, counters always have their expiry reset
+- Test del, delc on multi
+- Test multi with other mixtures of backends
