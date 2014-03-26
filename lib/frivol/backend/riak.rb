@@ -29,6 +29,7 @@ module Frivol
 
       def del(key)
         objects_bucket.delete(key)
+        expires_bucket.delete(key)
       end
 
       def exists(key)
@@ -65,6 +66,7 @@ module Frivol
 
       def delc(key)
         counters_bucket.delete(key)
+        expires_bucket.delete(key)
       end
 
       def existsc(key)

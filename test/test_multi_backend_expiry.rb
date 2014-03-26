@@ -13,7 +13,7 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
 
       @old_backend.set(t.storage_key, DATA)
       @old_backend.expire(t.storage_key, EXPIRY)
-      assert_equal EXPIRY, @backend.ttl(t.storage_key)
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key), 2
     end
 
     def test_exists
@@ -34,7 +34,7 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       t = TestClass.new
       @old_backend.set(t.storage_key, DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key)
-      assert_equal EXPIRY, @backend.ttl(t.storage_key)
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key), 2
       # Because get migrates
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
@@ -45,8 +45,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key, DATA, EXPIRY)
       assert_equal VALUE, t.retrieve(KEY => false)
       # Because get migrates
-      assert_equal EXPIRY, @backend.ttl(t.storage_key)
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key), 2
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
     end
@@ -56,8 +56,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key(:diamonds), DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key(:diamonds))
       # Because get migrates
-      assert_equal EXPIRY, @backend.ttl(t.storage_key(:diamonds))
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:diamonds))
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key(:diamonds)), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key(:diamonds)), 2
       assert @new_backend.exists(t.storage_key(:diamonds))
       refute @old_backend.exists(t.storage_key(:diamonds))
     end
@@ -67,8 +67,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key(:sapphires), DATA, EXPIRY)
       assert_equal VALUE, t.retrieve_sapphires(KEY => false)
       # Because get migrates
-      assert_equal EXPIRY, @backend.ttl(t.storage_key(:sapphires))
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:sapphires))
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key(:sapphires)), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key(:sapphires)), 2
       assert @new_backend.exists(t.storage_key(:sapphires))
       refute @old_backend.exists(t.storage_key(:sapphires))
     end
@@ -78,8 +78,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key, DATA, EXPIRY)
       @backend.set(t.storage_key, DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key)
-      assert_equal EXPIRY, @backend.ttl(t.storage_key)
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key), 2
       assert_nil @old_backend.ttl(t.storage_key)
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key)
@@ -91,8 +91,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key, DATA, EXPIRY)
       t.store KEY => VALUE
       assert_equal VALUE, t.retrieve(KEY => false)
-      assert_equal EXPIRY, @backend.ttl(t.storage_key)
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key), 2
       assert_nil @old_backend.ttl(t.storage_key)
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key)
@@ -104,8 +104,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key(:garnets), DATA, EXPIRY)
       @backend.set(t.storage_key(:garnets), DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key(:garnets))
-      assert_equal EXPIRY, @backend.ttl(t.storage_key(:garnets))
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:garnets))
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key(:garnets)), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key(:garnets)), 2
       assert_nil @old_backend.ttl(t.storage_key(:garnets))
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key(:garnets))
@@ -117,8 +117,8 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       @old_backend.set(t.storage_key(:topaz), DATA, EXPIRY)
       t.store_topaz KEY => VALUE
       assert_equal VALUE, t.retrieve_topaz(KEY => false)
-      assert_equal EXPIRY, @backend.ttl(t.storage_key(:topaz))
-      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:topaz))
+      assert_in_delta EXPIRY, @backend.ttl(t.storage_key(:topaz)), 2
+      assert_in_delta EXPIRY, @new_backend.ttl(t.storage_key(:topaz)), 2
       assert_nil @old_backend.ttl(t.storage_key(:topaz))
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key(:topaz))

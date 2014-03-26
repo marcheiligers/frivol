@@ -17,7 +17,7 @@
 - Riak exists doesn't check expiry
 - Remove backend methods that are not required
 - Remove pry
-- When deleting objects on the Riak backend, also delete the expiry
 - Now, counters always have their expiry reset
-- Test del, delc on multi
 - Test multi with other mixtures of backends
+- Add key prefix option to riak backend
+- Ensure backends are different for multi

@@ -41,7 +41,7 @@ module Frivol
       end
 
       def delc(key)
-        @primary_backend.del(key)
+        @primary_backend.delc(key)
         @other_backends.each { |be| be.delc(key) }
       end
 
