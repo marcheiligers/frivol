@@ -77,5 +77,25 @@ class TestMultiBackend < Test::Unit::TestCase
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
     end
+
+    def test_set_with_bucket
+      t = Class.new(TestClass) { storage_bucket :garnets }.new
+      @old_backend.set(t.storage_key(:garnets), DATA)
+      @backend.set(t.storage_key(:garnets), DATA)
+      assert_equal DATA, @backend.get(t.storage_key(:garnets))
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:garnets))
+      refute @old_backend.exists(t.storage_key(:garnets))
+    end
+
+    def test_store_with_bucket
+      t = Class.new(TestClass) { storage_bucket :topaz }.new
+      @old_backend.set(t.storage_key(:topaz), DATA)
+      t.store_topaz KEY => VALUE
+      assert_equal VALUE, t.retrieve_topaz(KEY => false)
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:topaz))
+      refute @old_backend.exists(t.storage_key(:topaz))
+    end
   end
 end

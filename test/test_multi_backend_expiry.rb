@@ -44,49 +44,85 @@ class TestMultiBackendExpiry < Test::Unit::TestCase
       t = Class.new(TestClass) { storage_expires_in EXPIRY }.new
       @old_backend.set(t.storage_key, DATA, EXPIRY)
       assert_equal VALUE, t.retrieve(KEY => false)
+      # Because get migrates
       assert_equal EXPIRY, @backend.ttl(t.storage_key)
       assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
-      # Because get migrates
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
     end
 
     def test_get_with_bucket
-      t = Class.new(TestClass) { storage_bucket :diamonds }.new
-      @old_backend.set(t.storage_key(:diamonds), DATA)
+      t = Class.new(TestClass) { storage_bucket :diamonds, :expires_in => EXPIRY }.new
+      @old_backend.set(t.storage_key(:diamonds), DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key(:diamonds))
       # Because get migrates
+      assert_equal EXPIRY, @backend.ttl(t.storage_key(:diamonds))
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:diamonds))
       assert @new_backend.exists(t.storage_key(:diamonds))
       refute @old_backend.exists(t.storage_key(:diamonds))
     end
 
     def test_retrieve_with_bucket
-      t = Class.new(TestClass) { storage_bucket :sapphires }.new
-      @old_backend.set(t.storage_key(:sapphires), DATA)
+      t = Class.new(TestClass) { storage_bucket :sapphires, :expires_in => EXPIRY }.new
+      @old_backend.set(t.storage_key(:sapphires), DATA, EXPIRY)
       assert_equal VALUE, t.retrieve_sapphires(KEY => false)
       # Because get migrates
+      assert_equal EXPIRY, @backend.ttl(t.storage_key(:sapphires))
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:sapphires))
       assert @new_backend.exists(t.storage_key(:sapphires))
       refute @old_backend.exists(t.storage_key(:sapphires))
     end
 
     def test_set
       t = TestClass.new
-      @old_backend.set(t.storage_key, DATA)
-      @backend.set(t.storage_key, DATA)
+      @old_backend.set(t.storage_key, DATA, EXPIRY)
+      @backend.set(t.storage_key, DATA, EXPIRY)
       assert_equal DATA, @backend.get(t.storage_key)
+      assert_equal EXPIRY, @backend.ttl(t.storage_key)
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
+      assert_nil @old_backend.ttl(t.storage_key)
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
     end
 
     def test_store
-      t = TestClass.new
-      @old_backend.set(t.storage_key, DATA)
+      t = Class.new(TestClass) { storage_expires_in EXPIRY }.new
+      @old_backend.set(t.storage_key, DATA, EXPIRY)
       t.store KEY => VALUE
       assert_equal VALUE, t.retrieve(KEY => false)
+      assert_equal EXPIRY, @backend.ttl(t.storage_key)
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key)
+      assert_nil @old_backend.ttl(t.storage_key)
       # Because set deletes from old backends
       assert @new_backend.exists(t.storage_key)
       refute @old_backend.exists(t.storage_key)
+    end
+
+    def test_set_with_bucket
+      t = Class.new(TestClass) { storage_bucket :garnets, :expires_in => EXPIRY }.new
+      @old_backend.set(t.storage_key(:garnets), DATA, EXPIRY)
+      @backend.set(t.storage_key(:garnets), DATA, EXPIRY)
+      assert_equal DATA, @backend.get(t.storage_key(:garnets))
+      assert_equal EXPIRY, @backend.ttl(t.storage_key(:garnets))
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:garnets))
+      assert_nil @old_backend.ttl(t.storage_key(:garnets))
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:garnets))
+      refute @old_backend.exists(t.storage_key(:garnets))
+    end
+
+    def test_store_with_bucket
+      t = Class.new(TestClass) { storage_bucket :topaz, :expires_in => EXPIRY }.new
+      @old_backend.set(t.storage_key(:topaz), DATA, EXPIRY)
+      t.store_topaz KEY => VALUE
+      assert_equal VALUE, t.retrieve_topaz(KEY => false)
+      assert_equal EXPIRY, @backend.ttl(t.storage_key(:topaz))
+      assert_equal EXPIRY, @new_backend.ttl(t.storage_key(:topaz))
+      assert_nil @old_backend.ttl(t.storage_key(:topaz))
+      # Because set deletes from old backends
+      assert @new_backend.exists(t.storage_key(:topaz))
+      refute @old_backend.exists(t.storage_key(:topaz))
     end
   end
 end
