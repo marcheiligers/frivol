@@ -41,11 +41,11 @@ module Frivol
       return data[bucket.to_s] if data.key?(bucket.to_s)
       key = instance.send(:storage_key, bucket)
       time = instance.class.storage_expiry(bucket)
-      json = Frivol::Config.backend.get(key, time)
+      json = Frivol::Config.backend.get(key, time).to_s
 
-      is_new[bucket.to_s] = json.nil?
+      is_new[bucket.to_s] = json.empty?
 
-      hash = json.to_s=="" ? {} : load_json(json)
+      hash = json.empty? ? {} : load_json(json)
       data[bucket.to_s] = hash
 
       self.set_data_and_is_new instance, data, is_new
