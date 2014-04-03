@@ -45,7 +45,7 @@ module Frivol
 
       is_new[bucket.to_s] = json.nil?
 
-      hash = json.nil? ? {} : load_json(json)
+      hash = json.to_s=="" ? {} : load_json(json)
       data[bucket.to_s] = hash
 
       self.set_data_and_is_new instance, data, is_new

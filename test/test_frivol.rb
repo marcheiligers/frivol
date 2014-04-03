@@ -24,6 +24,15 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal "default", t.retrieve(:value => 'default')
   end
 
+  def test_return_default_when_stored_value_is_emtpy_string
+    t = TestClass.new
+    key = t.storage_key
+    Frivol::Config.backend.connection.set(key, "")
+    assert_nothing_raised do
+      assert_equal "36", t.retrieve( :some_string => "36")
+    end
+  end
+
   def test_save_and_retrieve_multiple_values
     t = TestClass.new
     t.store :val1 => 1, :val2 => 2
