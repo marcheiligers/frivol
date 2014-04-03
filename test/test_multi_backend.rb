@@ -50,6 +50,13 @@ class TestMultiBackend < Test::Unit::TestCase
       refute @old_backend.exists(t.storage_key)
     end
 
+    def test_retrieve_non_existing
+      t = TestClass.new
+      assert_nothing_raised do
+        assert_nil t.retrieve(:nothing => nil)
+      end
+    end
+
     def test_retrieve
       t = TestClass.new
       @old_backend.set(t.storage_key, DATA)

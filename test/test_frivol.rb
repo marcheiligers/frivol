@@ -12,6 +12,13 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal "value", t.retrieve(:value => 'default')
   end
 
+  def test_retrieve_non_existing
+    t = TestClass.new
+    assert_nothing_raised do
+      assert_nil t.retrieve(:nothing => nil)
+    end
+  end
+
   def test_return_a_default_for_a_value_thats_not_in_storage
     t = TestClass.new
     assert_equal "default", t.retrieve(:value => 'default')
