@@ -43,7 +43,7 @@ module Frivol
       time = instance.class.storage_expiry(bucket)
       json = Frivol::Config.backend.get(key, time).to_s
 
-      is_new[bucket.to_s] = json.empty?
+      is_new[bucket.to_s] = json.empty??
 
       hash = json.empty? ? {} : load_json(json)
       data[bucket.to_s] = hash

@@ -27,7 +27,7 @@ class TestFrivol < Test::Unit::TestCase
   def test_return_default_when_stored_value_is_emtpy_string
     t = TestClass.new
     key = t.storage_key
-    Frivol::Config.backend.connection.set(key, "")
+    Frivol::Config.backend.set(key, "")
     assert_nothing_raised do
       assert_equal "36", t.retrieve( :some_string => "36")
     end
