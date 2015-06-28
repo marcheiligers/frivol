@@ -4,7 +4,6 @@ class TestRiak < Test::Unit::TestCase
   if riak_test?
     def test_prefix
       backend = Frivol::Backend::Riak.new(
-        :protocol => 'http',
         :nodes => [ { :host => '127.0.0.1' } ],
         :prefix => 'test_riak_'
       )

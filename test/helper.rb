@@ -22,7 +22,7 @@ class Test::Unit::TestCase
       require 'frivol/backend/riak'
       I18n.enforce_available_locales = false
       Riak.disable_list_keys_warnings = true
-      @backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @backend = Frivol::Backend::Riak.new(:nodes => [ { :host => '127.0.0.1' } ])
       @backend.flushdb
       Frivol::Config.backend = @backend
     when 'multi'
@@ -58,7 +58,7 @@ class Test::Unit::TestCase
       I18n.enforce_available_locales = false
       Riak.disable_list_keys_warnings = true
       @old_backend = Frivol::Backend::Redis.new(:db => 10)
-      @new_backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @new_backend = Frivol::Backend::Riak.new(:nodes => [ { :host => '127.0.0.1' } ])
       @backend = Frivol::Backend::Multi.new([ @new_backend, @old_backend ])
       @backend.flushdb
       Frivol::Config.backend = @backend
@@ -70,7 +70,7 @@ class Test::Unit::TestCase
       I18n.enforce_available_locales = false
       Riak.disable_list_keys_warnings = true
       @old_backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
-      @new_backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @new_backend = Frivol::Backend::Riak.new(:nodes => [ { :host => '127.0.0.1' } ])
       @backend = Frivol::Backend::Multi.new([ @new_backend, @old_backend ])
       @backend.flushdb
       Frivol::Config.backend = @backend
@@ -80,7 +80,7 @@ class Test::Unit::TestCase
       require 'frivol/backend/multi'
       I18n.enforce_available_locales = false
       Riak.disable_list_keys_warnings = true
-      @old_backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @old_backend = Frivol::Backend::Riak.new(:nodes => [ { :host => '127.0.0.1' } ])
       @new_backend = Frivol::Backend::Redis.new(:db => 10)
       @backend = Frivol::Backend::Multi.new([ @new_backend, @old_backend ])
       @backend.flushdb
@@ -92,7 +92,7 @@ class Test::Unit::TestCase
       require 'frivol/backend/multi'
       I18n.enforce_available_locales = false
       Riak.disable_list_keys_warnings = true
-      @old_backend = Frivol::Backend::Riak.new(:protocol => 'http', :nodes => [ { :host => '127.0.0.1' } ])
+      @old_backend = Frivol::Backend::Riak.new(:nodes => [ { :host => '127.0.0.1' } ])
       @new_backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
       @backend = Frivol::Backend::Multi.new([ @new_backend, @old_backend ])
       @backend.flushdb
