@@ -5,11 +5,11 @@ gem 'rake'
 
 group :development do
   gem 'jeweler'
+  gem 'pry'
+  gem 'pry-debugger'
 end
 
 group :test do
-  gem 'pry'
-  gem 'pry-debugger'
   gem 'test-unit'
   gem 'redis'
   gem 'riak-client'
