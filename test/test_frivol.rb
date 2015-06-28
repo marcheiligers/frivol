@@ -3,7 +3,7 @@ require "#{File.expand_path(File.dirname(__FILE__))}/helper.rb"
 class TestFrivol < Test::Unit::TestCase
   def test_have_a_default_storage_key_made_up_of_the_class_name_and_id
     t = TestClass.new
-    assert_equal "TestClass-1", t.storage_key
+    assert_equal "TestClass-#{@test_id}", t.storage_key
   end
 
   def test_store_and_retrieve_data
@@ -12,9 +12,25 @@ class TestFrivol < Test::Unit::TestCase
     assert_equal "value", t.retrieve(:value => 'default')
   end
 
+  def test_retrieve_non_existing
+    t = TestClass.new
+    assert_nothing_raised do
+      assert_nil t.retrieve(:nothing => nil)
+    end
+  end
+
   def test_return_a_default_for_a_value_thats_not_in_storage
     t = TestClass.new
     assert_equal "default", t.retrieve(:value => 'default')
+  end
+
+  def test_return_default_when_stored_value_is_emtpy_string
+    t = TestClass.new
+    key = t.storage_key
+    Frivol::Config.backend.set(key, "")
+    assert_nothing_raised do
+      assert_equal "36", t.retrieve( :some_string => "36")
+    end
   end
 
   def test_save_and_retrieve_multiple_values
@@ -68,7 +84,7 @@ class TestFrivol < Test::Unit::TestCase
     end.new
 
     t.store :value => 'value'
-    assert Frivol::Config.redis["my_storage"]
+    assert @backend.get("my_storage")
   end
 
   def test_retain_Times_as_Times
@@ -87,7 +103,7 @@ class TestFrivol < Test::Unit::TestCase
   end
 
   def test_use_default_expiry_set_on_the_class
-    klass = Class.new(TestClass) { storage_expires_in -1 }
+    klass = Class.new(TestClass) { storage_expires_in -10 }
     t = klass.new
     t.store :value => 'value'
 
@@ -101,10 +117,10 @@ class TestFrivol < Test::Unit::TestCase
     t = Class.new(TestClass) { storage_expires_in 2 }.new
 
     t.store :value => 'value'
-    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+    assert @backend.ttl(t.storage_key) > 0
 
     t.store :value => 'value' # a second time
-    assert Frivol::Config.redis.ttl(t.storage_key) > 0
+    assert @backend.ttl(t.storage_key) > 0
   end
 
   def test_be_able_to_include_in_other_classes_with_storage_expiry
@@ -119,8 +135,8 @@ class TestFrivol < Test::Unit::TestCase
     t = TestClass.new
     t.retrieve :value => 'default'
 
-    redis = Frivol::Config.redis
-    def redis.[](key); raise 'Onoes, loaded again'; end
+    # ensure we're getting the result from the cache and not Redis
+    def @backend.get(key); raise 'Onoes, loaded again'; end
 
     t.retrieve :value => 'default'
   end
@@ -141,8 +157,7 @@ class TestFrivol < Test::Unit::TestCase
     t.clear_gold
 
     # ensure we're getting the result from Redis and not the cache
-    redis = Frivol::Config.redis
-    def redis.[](key)
+    def @backend.get(key, expiry = nil)
       MultiJson.dump(:value => 'this is what we want')
     end
 

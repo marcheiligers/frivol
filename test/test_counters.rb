@@ -69,4 +69,35 @@ class TestCounters < Test::Unit::TestCase
     t.store_yellow 10
     assert_equal 0, t.retrieve_yellow(0)
   end
+
+  def test_expire_on_a_counter_bucket_using_increment
+    t = Class.new(TestClass) { storage_bucket :fuscia, :counter => true, :expires_in => -1 }.new
+    assert_equal 1, t.increment_fuscia
+    assert_equal 0, t.retrieve_fuscia(0)
+  end
+
+  def test_expire_on_a_counter_bucket_using_increment_by
+    t = Class.new(TestClass) { storage_bucket :magenta, :counter => true, :expires_in => -1 }.new
+    t.increment_magenta_by 10
+    assert_equal 0, t.retrieve_magenta(0)
+  end
+
+  def test_expire_on_a_counter_bucket_using_decrement
+    t = Class.new(TestClass) { storage_bucket :rose, :counter => true, :expires_in => -1 }.new
+    t.decrement_rose
+    assert_equal 0, t.retrieve_rose(0)
+  end
+
+  def test_expire_on_a_counter_bucket_using_decrement_by
+    t = Class.new(TestClass) { storage_bucket :orchid, :counter => true, :expires_in => -1 }.new
+    t.decrement_orchid_by 10
+    assert_equal 0, t.retrieve_orchid(0)
+  end
+
+  def test_delete_a_counter_bucket
+    t = Class.new(TestClass) { storage_bucket :debt, :counter => true }.new
+    t.store_debt 100_000
+    t.delete_debt
+    assert_equal 0, t.retrieve_debt(0)
+  end
 end

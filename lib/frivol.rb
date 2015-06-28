@@ -1,5 +1,3 @@
-require "redis"
-
 # == Frivol
 module Frivol
   require "frivol/config"
@@ -56,7 +54,7 @@ module Frivol
   # Expire the stored data in +time+ seconds.
   def expire_storage(time, bucket = nil)
     return if time.nil?
-    Frivol::Config.redis.expire storage_key(bucket), time
+    Frivol::Config.backend.expire storage_key(bucket), time
   end
 
   # The base key used for storage in Redis.

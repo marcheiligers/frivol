@@ -3,31 +3,17 @@ module Frivol
   # Sets the Frivol configuration (currently only the Redis config), allows access to the configured Redis instance,
   # and has a helper method to include Frivol in a class with an optional storage expiry parameter
   module Config
-    # Set the Redis configuration.
+    # Set the Backend.
     #
-    # Expects a hash such as
-    #   REDIS_CONFIG = {
-    #     :host => "localhost",
-    #     :port => 6379
-    #   }
-    #   Frivol::Config.redis_config = REDIS_CONFIG
-    def self.redis_config=(config)
-      @@redis_config = config
-      @@redis_version = nil
-      Thread.current[:frivol_redis] = nil
+    # Expects one of Frivol::Backend::Redis, Frivol::Backend::RedisDistributed,
+    # Frivol::Backend::Riak or Frivol::Backend::Multi
+    def self.backend=(new_backend)
+      @@backend = new_backend
     end
 
-    # Returns the configured Redis instance
-    def self.redis
-      Thread.current[:frivol_redis] ||= Redis.new(@@redis_config)
-    end
-
-    def self.redis_version
-      redis.info('server')['redis_version'].to_f
-    end
-
-    def self.requires_expiry_reset?
-      redis_version < 2.2
+    # Get the Backend.
+    def self.backend
+      @@backend
     end
 
     def self.allow_json_create
