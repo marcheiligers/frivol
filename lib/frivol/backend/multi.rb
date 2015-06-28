@@ -1,6 +1,17 @@
 module Frivol
   module Backend
+    # == Configuration
+    # This backend is used to migrate from one backend to another (and another) (and another).
+    # Essentially, this backend will check for the existence of the key in the newest backend,
+    # and if not found check in the older backends in order. If it's found in an older backend
+    # it will move the value to the new backend.
+    #
+    # I have used this in production to move from Redis to RedisDistributed.
+    #   old_backend = Frivol::Backend::Redis.new(:db => 10)
+    #   new_backend = Frivol::Backend::RedisDistributed.new(["redis://127.0.0.1:6379/11", "redis://127.0.0.1:6379/12"])
+    #   Frivol::Config.backend = Frivol::Backend::Multi.new([ new_backend, old_backend ])
     class Multi
+      # :nodoc:
       BackendsNotUniqueError = Class.new(StandardError)
 
       def initialize(backends)

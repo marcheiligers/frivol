@@ -1,8 +1,16 @@
 require "riak"
 
-module Frivol
+module Frivol #:nodoc:
   module Backend
+    # == Configuration
+    # This backend is experimental. I have not used this in production. YMMV.
+    #   RIAK_CONFIG = {
+    #     :protocol => 'http',
+    #     :nodes => [ { :host => '127.0.0.1' } ]
+    #   }
+    #   Frivol::Config.backend = Frivol::Backend::Riak.new(RIAK_CONFIG)
     class Riak
+      # :nodoc:
       def initialize(config)
         @prefix = config.delete(:prefix) || ''
         @config = config

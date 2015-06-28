@@ -2,7 +2,15 @@ require "redis"
 
 module Frivol
   module Backend
+    # == Configuration
+    # This is a connection to a single Redis server and the simplest backend.
+    #   REDIS_CONFIG = {
+    #     :host => "localhost",
+    #     :port => 6379
+    #   }
+    #   Frivol::Config.backend = Frivol::Backend::Redis.new(REDIS_CONFIG)
     class Redis
+      # :nodoc:
       def initialize(config)
         @config = config
       end

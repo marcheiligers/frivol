@@ -4,7 +4,20 @@ require File.join(File.dirname(__FILE__), "redis")
 
 module Frivol
   module Backend
+    # == Configuration
+    # While it's not well known or documented, the Redis gem includes a sharding implementation in
+    # Redis::Distributed[http://www.rubydoc.info/gems/redis/3.2.1/Redis/Distributed]. This backend
+    # makes that available for Frivol.
+    #   REDIS_CONFIG = [{
+    #     :host => "localhost",
+    #     :port => 6379
+    #   }, {
+    #     :host => "localhost",
+    #     :port => 6380
+    #   }]
+    #   Frivol::Config.backend = Frivol::Backend::RedisDistributed.new(REDIS_CONFIG)
     class RedisDistributed < Frivol::Backend::Redis
+      # :nodoc:
       def set(key, val, expiry = Frivol::NEVER_EXPIRE)
         if expiry == Frivol::NEVER_EXPIRE
           connection.set(key, val)
